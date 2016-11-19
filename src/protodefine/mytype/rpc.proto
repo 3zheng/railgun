@@ -1,0 +1,26 @@
+package  bs.rpc; 
+enum CMDID_Rpc{
+   IDRpc_Req=1;
+   IDRpc_Rsp=2;
+   // 迟到的
+   IDRpc_LateRsp=3;
+   //超时的
+   IDRpc_TimeOut=4;
+};
+
+message RpcReq{
+   optional uint64 session_id=1;
+   optional uint32 cmd_kind=2;
+   optional uint32 cmd_subid=3;
+   optional bytes  data=4;
+};
+
+message  RpcRsp{
+   optional uint64 session_id=1;
+   optional uint32 cmd_kind=2;
+   optional uint32 cmd_subid=3;
+   optional bytes  data=4; 
+   optional bool   has_timeout=5;   //是否是超时回复
+   optional uint64 req_ret=6;       //通用int 回复
+};
+    

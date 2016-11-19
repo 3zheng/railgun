@@ -1,0 +1,313 @@
+import "types/types.proto";
+package bs.hallclient;
+
+enum CMDID_HallClient{
+   IDAllGroupReq			=1;         //查询大类请求
+   IDAllGroupRsp			=2;         //查询大类回复
+   IDAllListReq				=3;         //查询小类请求
+   IDAllListRsp				=4;         //查询小类回复
+
+   IDAllPlanReq				=7;				//查询赛事详细请求
+   IDAllPlanRsp				=8;				//赛事详细描述回复
+
+   IDDisplayPlanUpdateReq	= 9;		//更新赛事信息请求
+   IDPlanAllStartPoint		= 10;		//更新赛事信息回复
+
+   IDMyMatchDataReq			=11;			//我的赛事请求
+   IDMyMatchDataRsp			=12;		//我的赛事回复
+
+   IDGetMatchDetailReq		=13;
+   IDGetMatchDetailRsp		=14;
+
+   
+	IDTokenReq=15;    //获取token请求
+	IDTokenRsp=16;    //获取token回复
+
+	IDClientSysInfo=17;			//客户端的一些信息收集
+
+   IDLast					= 100;		
+};
+
+//////赛事配置信息
+message MatchConfig{
+	optional uint32 config_id = 1;			//配置id
+	optional string item_name = 2;			//配置名称
+	optional string item_value = 3;			//配置数据
+	optional uint32 item_id = 4;			//配置项id
+	optional string item_note = 5;			//说明
+	optional uint32 plan_id = 6;			//赛事id
+	optional uint32 item_flag = 7;			//&1表示只用于服务端，&2 表示只用于客户端，&4表示传给大厅客户端
+};
+
+//////////////大厅比赛列表报文定义(自由赛定义成一个开赛点)
+message AllGroupReq{
+	optional uint32 page_id = 1;
+	optional uint32 ver_code = 2;//比赛列表同步代码(当赛事增删的时候，ver_code自增)，list告诉gate当前的ver_code,由gate保存，当客户端发上来的ver_code与gate不同，则客户端向list发送请求赛事列表
+};
+
+message groupItem{
+	optional uint32 group_id = 1;		//大类id
+	optional string show_name = 2;	//大类名称
+	optional uint32 group_order = 3;	//显示顺序
+  optional uint32 show_platform=4; //显示的平台
+  optional uint32  icon_index = 5;  //显示的大组图标
+};
+
+message AllGroupRsp{
+	optional uint32  page_id = 1;
+	repeated groupItem items = 2;
+	optional uint32 ver_code = 3;
+};
+
+
+message  PlanSimpleInfo{
+   //简化版的赛事信息 v2
+   optional uint32   plan_id =1;       //赛事ID
+   optional string   show_name = 2;    //显示的名称
+
+   /* plan_type=1 人满
+      =2 定时循环赛
+      =3 指定开赛时间
+      =10 自由赛
+   */
+
+   optional uint32   plan_type = 3;       //赛事类型
+   optional string   show_prize= 4;      //显示的奖励
+   optional bool     free_join = 5;       //免费报名不
+   optional uint32   show_icon= 6;      //显示图标
+   optional uint32   fixed_count =7;      //人满报名人数
+   optional string   show_start=8;        //比赛开赛条件(右下显示用)
+   optional string   show_join=9;         //比赛加入条件(右下显示用)
+
+   //快速开赛，如果大于0，则表示是，数值越大，请优先选择
+   optional  uint32   quick_start=11;     //快速开赛标识,一般只有人满
+   optional  uint32  game_kind = 12;      //游戏ID
+   optional  uint32  app_id = 13;         //相关appid
+   optional  uint32  heat_degree = 14;    //大赛推荐度
+   optional  uint32  repeat_type = 15;    //重复类型
+   optional  uint32  repeat_value = 16;   //重复值
+   optional  string  show_custom= 17;     //其他自定义显示 
+   //只显示最新的
+   optional  uint32  show_point_count = 18;  //显示的开赛点数量
+
+   //对于show_name与show_title 分别对应于数据库的二个字段
+   //show_title 可以用于手机上吧
+   //
+   optional  string  show_title= 19;        //赛事名称
+
+   /*
+   如果是自由赛,且擂台数量大于0,则必须是擂台赛了
+   */
+   optional uint32   ring_table_count = 20;  //擂台数量
+
+
+}
+
+message  PrizeItem{
+   optional uint32 rank_begein=1;
+   optional uint32 rank_end=2;
+   optional uint64 count_gold =3;      //金币
+   optional uint64 count_gold_egg=4;   //奖券
+   optional string other_award=5;      //其他奖励 
+   //奖励类型
+   optional uint32 prize_type=6;    
+
+   //标识
+   optional uint32 prize_flag =7;
+
+};
+
+message TitleMatchItem{
+	optional uint32 plan_id = 1;			//赛事id
+	optional string show_title = 2;			//显示名称
+	optional uint32 plan_type = 3;			//=1 人满，=2 循环赛 =3 指定开赛点
+	optional uint32 repeat_type = 4;			//赛事循环类型
+	repeated types.FundItem join_fee = 5;
+   optional uint32  game_kind = 6;
+   repeated PrizeItem plan_prizes=7;
+
+   //连胜奖励
+   repeated PrizeItem prizces_win=8;
+
+   //局数奖励
+   repeated PrizeItem prizes_rounds=9;
+
+   //猎杀奖励
+   repeated PrizeItem prizes_killer=10;
+
+
+   optional string match_desc_url=16;
+
+	optional string prize_desc = 21;		//颁奖方案
+	optional string match_detail = 22;		//赛事详情
+	optional uint32 min_player_count = 23;		//最少开赛人数
+	optional uint32 max_wait_seconds = 24;		//赛事开赛最长等待时间
+	optional uint32 vip_level = 26;				//报名所需的最小vip等级
+	optional types.FundItem hold_fund = 27;			//必须持有的道具及数量
+	optional uint32 exp_id = 31;				//某个游戏的经验id
+
+	repeated  MatchConfig match_config = 32;
+	optional uint32 app_id = 33;			//报名服务器id
+	optional uint32 show_order = 34;	//显示顺序
+   
+    optional string group_name=48;
+    optional string list_name=49;
+    
+   //隐藏昵称与头像，即防作弊
+     optional bool hide_nick=57; 
+     
+     
+   /*
+   如果是自由赛,且擂台数量大于0,则必须是擂台赛了
+   */
+   optional uint32   ring_table_count = 58;  //擂台数量
+   optional uint32   seconds_next_round= 60; //
+   optional uint32   seconds_accept_round= 61; //
+
+};
+
+message GetMatchDetailReq{
+	optional uint32 plan_id = 1;
+	optional uint32 app_id = 2;
+};
+
+message GetMatchDetailRsp{
+   optional uint32  plan_id = 1; //赛事 id
+   optional bytes detail_titlematch= 3; 
+   optional uint32  app_id = 4; 
+   optional bytes    buff_simple_info=5;
+};
+
+//取大类下面的小类列表
+message AllListReq{	
+	optional uint32 page_id = 1;
+	optional uint32 group_id = 2;			
+	optional uint32 ver_code = 3;
+};
+
+message listItem{
+	optional uint32 list_id = 2;			//小类
+	optional string show_name = 3;			//小类显示名称
+	optional uint32 list_order = 4;			//显示顺序
+   optional uint32 show_platform=5;    //显示的平台
+   optional uint32 icon_index = 6;      //显示的图标
+};
+
+message AllListRsp{
+	optional uint32 page_id = 1;
+	optional uint32 group_id = 2;			
+	optional uint32 ver_code = 3;
+	repeated listItem items = 4;
+};
+
+message AllPlanReq{
+	optional uint32 page_id = 1;
+	optional uint32 group_id = 2;			//大类
+	optional uint32 list_id = 3;			//小类
+	optional uint32 ver_code =4;
+
+	optional uint32 game_kind = 5;  //对于手机类，请指定具体的游戏种类
+};
+
+message AllPlanRsp{
+	optional uint32 page_id = 1;
+	optional uint32 group_id = 2;			//大类
+	optional uint32 list_id = 3;			//小类
+	optional uint32 ver_code = 4;
+	
+   //简单描述
+   //这一项现在已经被抛弃了。
+   
+   //这样返回是原始设置的
+   repeated uint32 planid_set=6;    //设置的赛事id
+
+
+   //赛事的简单描述，需要转换成 PlanSimpleInfo
+   repeated bytes    simple_infos=7;   
+
+   //赛事的显示顺序，对应于上面的顺序，这样做的原因，是为简化服务器的处理
+
+   repeated uint32   plan_orders=8;
+
+   //赛事的显示人数，对应于上面的顺序，这样做的原因，是为简化服务器的处理
+   repeated uint32   plan_show_nums=9;
+
+   repeated uint32   plan_ids = 10;
+
+   
+   optional uint32 game_kind = 11;  //对于手机类，请指定具体的游戏种类
+};
+
+message startPointItem{
+	enum MatchState
+	{
+		SIGNUP_FORBID = 0;	//禁止报名
+		SIGNUP_ALLOW = 1;	//允许报名，正常展示阶段
+		SIGNUP_END = 2;		//报名结束，不允许报名
+		MATCH_START = 3;	//已经开始比赛
+		MATCH_END = 4;		//比赛结束
+	}
+	optional uint32 plan_id = 1;		//赛事id
+	optional uint64 match_id = 2;		//比赛id
+	optional uint64 start_time = 3;		//开赛时间，指定开赛点有效。人满开赛为0
+	optional uint32 current_sign = 4;	//报名人数
+	optional MatchState start_flag = 5;		//开赛状态 =0 不能报名， =1 比赛报名阶段, =2 比赛结束报名，但还没有开始阶段, =3 开始比赛/比赛进行中, =4 比赛结束
+
+	optional uint32 player_count = 7;		//在线人数
+
+	//后面可以加matchconfig发送给大厅方便定制显示
+};
+
+//这一组报文和前面的不一样，是批量请求单个更新，前面的都是批量请求批量更新
+//更新当前页面显示的所有赛事id请求
+message DisplayPlanUpdateReq{
+	optional uint32 ver_code = 1;
+	repeated uint32 array_plan_id = 2;	//一组赛事id
+	optional uint32 group_id = 3;			//大类
+	optional uint32 list_id = 4;			//小类
+};
+
+//一个赛事的所有开赛点
+message PlanAllStartPoint{
+//1，2这是根据申请的时候进行填写
+	optional uint32 group_id = 1;			//大类
+	optional uint32 list_id = 2;			//小类
+	optional uint32 plan_id = 3;
+//	repeated startPointItem startpt = 4;			//开赛点数据
+	optional uint32 ver_code = 5;
+
+   repeated  bytes start_points = 6;
+};
+
+
+message MyMatchDataReq{
+   optional uint32  game_kind = 1;  //如果为0，则回复所有游戏
+};
+
+message HasSignedMatchItem{
+	optional uint32 plan_id = 1;		//赛事id
+	optional uint64 match_id=2;			//比赛id
+};
+
+message RunningMatchItem{
+   optional uint32   plan_id=1;			//进行中的比赛
+   optional uint64   match_id=2;		//比赛id
+};
+
+message MyMatchDataRsp{
+   repeated HasSignedMatchItem signed_items=1;  //我已经报过名的比赛 
+   repeated RunningMatchItem   running_items=2;  //我的正在进行中的比赛
+};
+
+
+message TokenReq{
+
+}
+
+message TokenRsp{
+	required uint32 token_id = 1;
+}
+
+message ClientSysInfo{
+	optional string sys_info = 1;
+}

@@ -1,0 +1,70 @@
+//import "types/types.proto"
+
+package bs.userinfo;
+/*
+用户注册
+*/
+
+enum CMDID_UserInfo{
+  IDRegisterCheckReq=1;     //注册检查请求
+  IDRegisterCheckRsp=2;     //注册检查回复
+  IDRegisterReq=3;          //注册请求
+  IDRegisterRsp=4;          //注册回复
+
+  IDModifyPasswordReq=5;       //修改密码
+  IDModifyPasswordRsp=6;       //修改密码
+
+  IDModifyUserInfoReq = 7;    //修改信息请求
+  IDModifyUserInfoRsp = 8;    //修改信息回复
+
+
+  IDLast = 31;              //最后一个了
+};
+
+message RegisterCheckReq{
+    
+    optional uint32  check_type= 1;   //检查类型=0表示这是检查账号，=1表示这是检查昵称
+    optional string check_info= 2;   
+};
+
+
+
+message RegisterCheckRsp{
+    optional uint32 check_type = 1;
+    optional string check_info = 2;   
+    optional uint32 result_code= 3;   //检查类型=0 ok,其他有失败
+    optional string result_info= 4;   
+};
+
+
+message  RegisterReq{
+  optional string account           =1;
+  optional string nick_name         =2;
+  optional string clear_password    =3;
+  optional uint32 face_id           =4;
+  optional uint32 gender            =5;
+
+  optional string captcha_id        =6;
+  optional string captcha_text      =7;
+
+}
+
+message  RegisterRsp{
+  optional uint32 result_code = 1;
+  optional string result_info = 2;
+  optional uint64 user_id     = 3;
+  optional string account     = 4;
+}
+
+message  ModifyPasswordReq{
+   optional string account             = 1;
+   optional string new_password        = 2;       //新的明文密码
+   optional string old_password        = 3;       //老的明文密码
+}
+
+message ModifyPasswordRsp{
+   optional uint32  ret_code = 1;   
+   optional string  ret_info = 2;   
+}
+
+

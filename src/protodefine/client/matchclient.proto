@@ -1,0 +1,784 @@
+option optimize_for = LITE_RUNTIME;
+
+
+import "types/types.proto";
+package bs.matchclient;
+
+enum CMDID_MatchClient{
+
+	IDPlayerActionReq    = 1;  //用户常规动作请求
+	IDPlayerActionRsp    = 2;  //用户常规动作回复 与指示
+
+	IDJoinReq=3;			   //报名请求
+	IDJoinRsp=4;			   //报名回复
+
+	IDTableStatusInd=5;		   //某桌状态
+
+	IDGameData=6;			   //游戏报文
+	IDAddChip=7;		      //自动筹码（血量）通知
+	IDRankInfoReq=8;       // 玩家排名查询
+	IDRankInfoRsp=9;       // 玩家排名回复
+
+	IDEnterMatchReq=10;     //进入比赛请求
+	IDEnterMatchRsp=11;     //进入比赛回复
+   IDRoundStart=12;        //一局开始
+   IDUserInfoInd=13;       //用户信息通知
+   IDRoundEnd           =14;  //一局结束了
+  
+
+   IDMatchStart            = 15;     //比赛开始
+   IDDieoutStageEnding		= 16;			//一个海选阶段即将结束ing.
+   IDOneTurnEvent				= 17;			//一轮事件
+   IDStageEvent				= 18;			//  一个阶段事件
+   IDMatchPrize				= 19;			//比赛奖励
+   IDBaseScoreEvent        = 20;        //基数变化
+	IDBackGameReq				= 21;			//回到游戏请求(专门发给TableLogic)
+	IDBackGameRsp				= 22;			//回到游戏请求(专门发给TableLogic)
+
+   IDFixedNumberPlanReq= 23;              //查询固定人数比赛的信息
+   IDFixedNumberPlanRsp= 24;              //固定人数比赛信息回复或主动下发
+   IDMayIBack2MP=25;                      //客户端向mp查询是否可以重新回来，如果可以，则mp向客户端发matchstart
+
+
+   IDRoundSceneReq=26;        //游戏当前场景数据请求
+   IDRoundSceneRsp=27;        //游戏当前场景数据回复
+
+   IDPlayerRightReq  =28;     //玩家是否有权参赛请求
+   IDPlayerRightRsp  =29;     //玩家是否有权参赛回复
+
+   IDUserDetailInfo=30;       //用户详细信息
+
+   IDMatchGoingInfo=31;       //比赛进行信息
+
+   IDPlayerEndOneMatch=32;    //玩家结束了某项比赛
+   IDFreeMatchNewMatch=33;    //自由赛开始了一个新的比赛场阶段
+
+
+
+//   IDRingStart=34;            //擂台赛开始 s->c
+//   IDRingEnd=35;              //擂台赛结束 s->
+
+
+   IDRingActionReq = 36;       //c->s擂台动作请求:上擂,下擂,挑战,不挑战了,继续挑战,accept,stop
+   IDRingActionInd = 37;       //s->c擂台动作回复指示  上擂,下擂,挑战,不挑战了,accept,stop,基数变了,
+
+   IDRingListReq = 38;     //c->s擂台列表请求
+   IDRingListRsp = 39;     //s->c擂台列表回复
+
+
+   IDSwitchGroupReq = 40;   //切换比赛组请求
+   IDSwitchGroupRsp = 41;   //切换比赛组回复
+   IDRingInfoUpdate = 42;   //擂主擂台信息更新 -->单独通知擂主
+   IDRingNextRoundFee=43;   //擂台赛下局基数与税
+
+
+   IDRoomTaskPrizeInd=44;   //房间内任务报文
+   // 针对擂台赛增加新的报文定义
+   // 取擂台列表
+   // 回复擂台列表
+   // 上擂、下擂回复
+   // 攻擂(取消)请求与回复  c->s 表示请求 s->c 表示
+   ////////
+   //  
+
+
+   IDLast=48;				   //最后一个
+
+};
+
+//报名请求
+message JoinReq{
+   optional uint64 plan_id=1;                         //要报名的赛事 ID
+   optional uint64 match_id =2 [default =0];          //可能需要的比赛ID  
+   optional bool   is_cancel=3 [default  = false ];   //是否是退出报名 
+   optional uint32 fund_id=4;                        //报名使用的费用类型
+};
+//报名结果
+
+
+message JoinRsp{
+   enum JoinResult{
+      RT_Null= 1000;          //其他原因
+      RT_OK=0;          		//报名成功
+      RT_HasJoined   =1;   		//已经报过名了
+      RT_Fail_Term   =2;   		//条件不够
+      RT_Fail_Fee    =3;    	//费用不够
+      RT_Fail_StopJoin  =4;  	//停止报名了
+      RT_Fail_Maintain  =5;  	//系统维护中
+      RT_Fail_FullJoin  =6;  	// 人数满了
+      RT_Fail_Signing   =7;   	//正在报名中
+	   RT_Fail_NoMatch	=8;		//比赛ID不存在
+      RT_Fail_NotJoin   =9;      //还没有报过名
+      RT_Fail_Running   =10;     //比赛正在进行
+      RT_Fail_Ended     =11;     //比赛已经结束
+      RT_Fail_Busy      =12;     //系统忙
+      RT_Gold_Locked    =13;     //金币被锁了
+      RT_IP_CONFIGED    =14;     //特定ip才可以登录 
+      RT_Fail_String    =15;     //显示回复的内容
+      RT_Fail_Vip       =16;     //vip级别不够
+   };
+   optional bool is_cancel=1;       //是否是退出报名
+   optional JoinResult result=2 [default  = RT_Null]; 	//报名结果
+   optional string result_info=3;   //提示信息
+   optional uint64 plan_id = 4;
+   optional uint64 match_id = 5;
+
+   optional bool is_fullmatch=6[default =false]; //是否是人满赛
+   optional uint32 mp_appid=7;   //如果之前已经报过名了
+
+   optional uint32 game_kind =8;
+
+   optional uint32 current_join=9;     //当前报名人数    
+   optional uint32 current_online=10;  //当前在线人数
+   optional uint32  plan_type = 11;//  赛事类型
+};
+
+
+
+enum PlayerActionType{
+	AT_TakeSeat=1;          //入座
+	AT_StandUp=2;           //站立
+
+	AT_LookOn=4;            //旁观 
+
+	AT_SetReady=5;          //举手
+
+  AT_Leave = 7;         //离开
+   
+	AT_EnableAutoNextRound=10;	//自动继续下桌
+	AT_DisableAutoNextRound=11;//自动继续下桌
+  AT_EnterTable=13;          //进入某桌
+  AT_NoAction=14;	         //玩家没有操作
+  AT_PlayerBreaked=15;       //玩家掉线了
+  AT_ChangeTable = 16;       //请求换桌
+}
+
+message PlayerActionReq{
+
+	optional PlayerActionType act_type=1;
+	optional uint64 table_id=2;            //桌id
+	optional uint32 seat_index=3;          //座位索引
+	/** 短语索引*/
+	optional uint32 express_index=4;
+	/** 聊天内容*/
+	optional string chat_message=5;
+	/** 密码*/
+	optional string table_password=6;
+
+	optional uint64 match_id = 8;    //比赛id
+	optional uint64 match_group=9;   //组号id
+	optional uint64 action_data=10;	//关联数据
+};
+
+enum PlayerActionResult{
+   UNKOWN=1000;
+   OK=0; // 没问题
+   ERR_Playing=1;       //正在游戏中，不能站立
+   ERR_LowHealth=2;     //血量过低
+   ERR_FullSeat=3;      //坐满了
+   ERR_FullRoom = 4;    //房间满了
+};
+
+message PlayerActionRsp{
+
+	required PlayerActionType act_type=1;
+
+	optional uint64 table_id=2;
+
+	optional uint32 seat_index=3;
+
+	//请求结果
+	optional PlayerActionResult result_code= 4;
+  
+	optional string result_info=5;
+
+	//附加数据
+	optional bytes  other_data = 6;
+
+
+};
+
+
+message GameData{
+   optional uint32 game_kind = 1;
+   optional uint32 data_id = 2; 
+   optional bytes  data=3;
+   optional uint32 serial_no=4;
+   /*
+   加了一个table_id，主要是为方便TableLogic快速定义到桌号
+   */
+   optional uint64 table_id = 5;
+
+   optional uint32 tk_send=6;
+
+   optional uint64 match_id = 7;
+   optional uint64 match_group = 8;
+   optional uint64 plan_id= 9;
+
+};
+
+
+
+message TableStatus{
+/**
+状态
+R1=设置玩家，对于斗地主类游戏来说，类似于配桌成功，对于德州等来说，表示人数变化
+R2=解散一桌（德州类不会收到）
+R3=更新玩家状态
+*/
+   enum State{
+      BindTable=1;
+      Dismiss=2;
+      Update=3;
+   };
+   optional State table_stat=1;     
+	optional uint64 table_id=2;				//
+	optional bool   is_playing=3;				//是否正在一局中
+	optional uint64 base_score=4;			//底分
+
+   optional uint32  table_no = 5;      //显示给客户端的桌号
+
+   optional uint32 seat_count=6;          //这个桌的椅子数
+   /*
+   玩家数组，seat_index =0开始，如果值为0,则表示没有坐
+   */
+//   repeated uint64 players=7;             
+//   repeated bool   inround_stats=8;             // 各个位置上的玩家参赛状态
+   repeated types.UserRoomInfo users_rm= 9;     //相关的用户房间信息
+};
+
+
+
+
+
+
+/*
+奖励项目
+*/
+message PrizeItem{
+	optional	uint32 item_id=1;
+	optional	uint32 item_image=2;
+	optional	uint64 item_count=3;
+	optional string item_name = 4;
+};
+
+/*
+比赛奖励
+*/
+message MatchPrize{
+	//奖励数据
+	repeated PrizeItem prize_items=1;
+	//奖励语
+	optional string prize_words=2;
+
+	optional uint32 rank_no=3;	//名次
+
+   /*
+   如果下面这二个字段存在，则奖状需要显示组名及组人数
+   */
+	optional string  group_name = 4;		//如果一个组有名字，
+   optional uint32  player_in_group=5; //本组参赛人数
+   optional uint32  total_player_count=6; //总的参数人数
+
+
+   //下面这二个字段是为了接口
+   optional uint32  game_kind = 7;
+   optional uint32  ms_appid=8;
+
+///yyyymmddHHMM00 开赛时间
+   optional uint64  start_point=9;
+
+
+   optional uint32  rank_version = 10;  //排名版本
+
+   optional uint32 plan_id=11;         //赛事ID
+   optional uint64 match_id=12;        //比赛ID
+};
+
+/*
+补充血量（chip）
+*/
+message AddChip{
+	optional uint64 current_score=1;	//最新积分（筹码）
+	optional uint64 add_value=2;		//增加的数量
+   optional uint64 match_id =3;
+   optional uint64 group_id = 4;
+}
+
+message  RoundStart{
+   optional uint32 turn_index =1;   //第几轮
+   optional uint32 round_index =2;  //第几局
+   optional uint64 round_base=3;    //当前局基数
+   optional uint64 round_id = 4;    //对应的本局的ID
+   optional string round_strid=5;   //局字符串唯一id
+
+   
+   optional uint64 match_id = 7;
+   optional uint64 match_group = 8;
+   optional uint64 plan_id= 9;
+
+
+};
+
+
+
+message RoundEnd{
+   optional uint32 turn_index =1;   //第几轮
+   optional uint32 round_index =2;  //第几局 
+   /*
+   这里有一个问题就是要解决各个玩家在本局中获取的经验
+   这个需要放到游戏实现中去实现算了
+   */
+
+   
+   optional uint64 match_id = 7;
+   optional uint64 match_group = 8;
+   optional uint64 plan_id= 9;
+};
+
+/*
+  一个阶段事件
+*/
+message StageEvent{
+   optional uint32  stage_type=1;      //阶段类型 =0表示海选，=1 表示定局
+	optional uint32  stage_index=2;	   //第几个阶段
+	optional bool	  is_start=3;		   //是否是开始，否则是一个阶段结束
+   optional uint32  rank_count=4;      //本组本阶段开始时排名人数
+   optional uint64  match_group=6;     //在一个阶段开始的时候，可能会换组，会换ranklist
+   optional uint32  rank_appid=7;      //在一个阶段开始的时候，
+   optional uint64  rank_object = 8;   //在一个阶段开始的时候，可能会换组
+   optional string stage_name=9;			//阶段名称
+   optional string stage_rules=10;			//阶段规则
+
+
+/// 下面这些信息只有在一个阶段开始时才有的
+   optional uint32  stop_player_count = 11;  //海选截止时人数
+   optional uint32  promopte_player_count = 12;  //晋级人数
+   optional int64   current_base = 13;  //当前基数
+   optional uint32  turns_set=14;   //共几轮
+   optional uint32  rounds_set=15;   //共几轮
+   optional uint32  current_turn_index=16;   //当前第几轮
+   optional uint32  current_round_index=17;  //当前第几局
+   optional int64   dieout_score=18;     //低于多少被淘汰
+
+	optional string  group_name = 19;		//如果一个组有名字，则在此,只在阶段开始时有
+///
+   optional uint32  rush_round=20;   //达标局数
+   optional int64  rush_score = 21;   //达标分数
+
+};
+
+enum PromoteStat{
+	Promote =0;	//晋级
+		TBD=1;		//待定
+		Died=2;		//死了
+};
+
+/*
+一轮结束
+*/
+message OneTurnEvent{
+	optional uint32   turn_index =1;   //第几轮
+  optional bool     is_start =2; //是否是一轮开始,否则是一轮结束
+	optional uint32   playing_table_count=3;			//正在进行比赛的桌子数
+  optional uint32   player_count = 4; //剩余人数 
+  optional uint32   promote_count =5; //晋级人数
+  optional string   promote_rule=6;   //晋级规则
+
+  optional uint32   promote_stat =7;  //玩家晋级状态,参见上面 PromoteStat
+  optional uint32   rank_no=8;        //玩家排名
+  optional int64    score=9;          //玩家分数
+
+  optional uint64   group_id = 10;    //组id
+
+};
+
+/*
+一个海选阶段即将结束ing.
+*/
+message  DieoutStageEnding{
+	optional uint32 player_left =1;		      //本组当前玩家剩下
+	optional uint32 playing_table_count=2;	   //正组在进行的桌子数量
+   optional uint32 playing_table_count_mp=3; //本服正在进行的桌子数量，注意，还有其他服的无法统计
+};
+
+/*
+排名前列
+*/
+message TopRankList{
+	repeated uint64  user_id=1;         //用户ID
+   repeated int64   user_score=2;      //用户积分
+   repeated uint32  user_rank=3;       //用户排名
+   repeated PromoteStat  user_stat =4;      //用户状态，比赛？晋级
+   repeated string   nick_name=5;         //用户的昵称
+
+
+};
+
+message MatchRankData{
+
+	optional bytes top_rank_data=1;	//TopRankList转换成的buffer
+
+   optional uint32  total_sign=2;      //总共报名人数
+   optional uint32  total_join=3;      //总共参加人数
+   optional uint32  current_count=4;   //当前还剩下的人数
+
+   optional uint32  rank_version = 5;  //排名版本
+
+   //比赛id
+   optional uint64  match_id = 6;
+   optional uint64  match_group= 7;
+   optional uint64  plan_id = 8;
+	//不在上面那个top_rank_data中的数据
+   optional TopRankList other_users=9;
+
+
+
+};
+
+message  RankListReq{
+	optional uint64  match_id =1;
+	optional uint64  match_group=2;
+   optional uint64  rank_object = 3; 
+	repeated uint32  user_list=4;		//其他想查的用户id
+   optional bool    first_time=5;   //是第一次来获取列表
+};
+//进入比赛请求
+
+enum EnterMatchType{
+   EnterMatch=0;   //入赛
+   LeaveMatch=2;  //离开比赛（退赛,退出旁观）
+   LookOn=4;      //旁观
+};
+message EnterMatchReq{
+   optional EnterMatchType enter_type=1;  //进入类型
+   optional uint64  match_id = 2;         //赛事id
+   optional uint64  match_group=3;        //比赛组group_id
+
+   
+};
+
+message  EnterMatchRsp{
+	optional EnterMatchType enter_type=1;  //进入类型
+	enum EnterResult{
+      UNKOWN=1000;
+		OK=0;
+		Fail_No_Apply=1;     //没有报过名
+		Fail_DieOut=2;       //被淘汰了
+		Fail_TimeOut=3;      //开赛很久了，进入窗口被关闭了
+		Fail_MatchHasEnd=4;  //比赛已经结束了
+    Fail_String=5;       //根据 提示消息来
+	};
+	optional EnterResult result_code=2;
+	optional uint64 match_id =3;
+
+	optional string result_info=4;
+
+	optional uint32 started_seconds=5;	//已经跑了的秒数
+	//可以再附加其他信息到这里
+	optional string group_name = 6;		//如果一个组有名字，则在此
+
+	optional uint32 tablelogic_appid=7;	//用户所在TableLogic,
+	optional uint64 table_id=8;			//用户所在桌ID,为0表示不在任何桌
+
+   optional int64    my_score = 9;        //我的积分
+   optional uint32   my_rank = 10;        //我的排名
+   optional uint32   rank_count = 11;     //本组的排名人数
+
+   optional uint32   my_health=12;        //我的血量
+   optional uint32   ring_flag = 13;      //擂台赛标识 &0x01 表示是擂主.
+
+};
+
+
+message  MatchStart{
+   optional uint64  mp_id = 1;   //需要填写的mp id
+   optional uint64  group_id= 2;   //比赛组id
+   optional uint64  match_id =3;   //比赛id
+   optional uint32  rank_appid=4;   //对应的rank appid
+   optional uint64  rank_objectid=5;   //对应的rank app中的实体id
+
+   optional uint32  total_signup=6; //总的报名人数
+   optional bool    back_game =7;   //是否是断线回来，顶号回来   
+
+   optional string  plan_name = 8;  //赛事名称
+
+   optional uint32  ms_appid=9;     //报名的matchstart app id
+   optional uint32  game_kind = 10; //游戏id
+   optional string group_name = 11;  //组名
+   optional uint32 plan_id =12;
+};
+
+
+message BaseScoreEvent{
+   optional uint64  base_score=1;   //新的基数
+   optional uint32  seconds=2;      //多少秒后生效
+   optional int64   dieout_score=3; //低于此分被淘汰
+};
+
+message BackGameReq{
+   optional uint64  group_id= 1;   //比赛组id
+   optional uint64  match_id =2;   //比赛id
+	optional uint64  table_id=3;		//桌号
+};
+
+message BackGameRsp{
+	optional uint32 ret_code = 1;//结果，这是指失败
+	optional string ret_info =2;	//结果信息
+
+};
+
+message  FixedNumberPlanReq{
+   optional uint64  match_id=1;  //比赛id
+};
+
+message  FixedNumberPlanRsp{
+   optional uint64  match_id=1;  //比赛id
+   optional uint32  signup_count = 2;  //当前报名人数
+   optional string  last_champion= 3;  //最近一场的冠军nickname
+   optional uint32  need_count=   4;  //需要的人数
+   optional uint32  average_seconds=5;    //平均开赛秒数
+   optional uint32  except_seconds=6;     //预计还需要的秒数
+
+   optional uint32  game_kind = 7;
+};
+
+message  MayIBack2MP{
+   optional uint32  plan_id=1;
+   //我竟然之前是32位的
+   //比赛id
+   optional uint64  match_id=2;
+};
+message  RoundSceneReq{
+  optional  bytes    req_data =2;
+  optional  uint64  table_id =3;
+
+}
+
+message RoundSceneRsp{
+  optional  bytes    rsp_data = 2;
+}
+
+message  PlayerRightReq{
+   optional uint32  plan_id = 1;
+}
+
+message  PlayerRightRsp{
+   optional bool has_right =1;
+   optional uint32  plan_id =2;
+   optional uint32  match_id = 3;
+}
+
+message UserInfoInd{
+   //用户信息
+   repeated string users_nickname=1;
+   repeated uint64 users_id=2;
+};
+
+message  UserDetailInfo{
+   optional uint64  match_id = 1;
+   optional uint64  match_group = 2;
+   optional uint64  plan_id = 3;
+   repeated types.UserRoomInfo users_rm= 6;     //相关的用户房间信息
+};
+message  MatchGoingInfo{
+/*
+
+*/
+//当前比赛（或自由赛阶段）进行了多少秒
+   optional uint32 running_seconds=1;
+
+   //当前玩家数量
+   optional uint32 current_count=2;
+
+   //当前基数
+   optional int64 current_base=3;
+
+   //当前比赛id
+   optional uint64 match_id=4;
+
+};
+ 
+message  PlayerEndOneMatch{   
+   //赛事id
+   optional uint32  plan_id = 1;
+   //比赛id
+   optional uint64  match_id = 2;
+   //赛事类型
+   optional uint32  plan_type = 3;
+   //ms app id
+   optional uint32  ms_appid= 4;
+
+   //option room id 
+   optional uint32  room_id = 5;
+
+   optional uint32  game_kind = 6;
+}
+message  FreeMatchNewMatch{
+   optional uint32  plan_id=1;
+   optional uint64  match_id = 2;
+   //单场比赛时长分钟
+   optional uint32  match_minutes=3;
+   //比赛已经跑了的比赛时间
+   optional uint32  match_running_seconds =4;
+
+   //积分带入下阶段的百分比
+   optional  uint32  score_2_next_percent = 5;
+}
+
+
+/*
+//开战
+message  RingStart{
+  optional int64 tax = 1; //台费数量
+  
+}
+
+message  RingEnd{
+  repeated uint32  seat_array  = 1;  //座位列表
+  repeated int64   win_array   = 2;  //输赢数据 
+  optional int64   total_array = 3; //累计输赢
+  optional int64   next_base   = 4;  //下场基数
+};
+*/
+
+
+//擂台列表申请
+message  RingListReq{
+  optional uint64 match_id    = 2;  // 比赛ID
+  optional uint64 match_group    = 3;  // group id=1 表示发到擂台组,=0 表示发到岛屿组,这里固定=1
+  optional uint32 search_ring = 4;  // 特殊擂台号
+  repeated uint32 show_rings  = 5;  // 更新列表用
+}
+
+message RingInfo{
+  optional uint32 ring_no  = 1; 
+  optional uint64 user_id   = 2;
+  optional uint64 game_id   = 3;   
+  optional string nick_name = 4;  //擂主昵称
+  optional int64  host_health  = 5;  //擂主血量
+  optional uint32 stat      = 6;  //状态 =0 空闲, =1 战斗中
+  optional uint32 mate_count= 7;  //排队人数
+};
+
+
+//挑战者
+message  Challenger{
+   optional uint64  user_id   = 1;
+   optional uint64  game_id   = 2;
+   optional string  nick_name = 3;
+   optional int64   health    = 4;
+   optional int64   gage_fee  = 5;//挑战费
+};
+message  RingInfoUpdate{
+   optional RingInfo       info = 1;
+   repeated Challenger     challengers = 2;
+   optional uint32          seconds_timeout = 3; //超时秒数 
+}
+message  RingListRsp{
+  optional uint64 match_id    = 2;  // 比赛ID
+  optional uint64 group_id    = 3;  // 比赛ID
+  repeated bytes  ring_data   = 5;  //擂主信息
+  repeated int64  gage_fees   =8;   //挑战费啊
+
+  optional uint32 search_ring = 6;  // 特殊擂台号
+  repeated uint32 show_rings  = 7; 
+}
+/*
+擂台赛动作
+*/
+message  RingActionReq{
+
+
+  optional uint64 match_id    = 2;  // 比赛ID
+  optional uint64 match_group    = 3;  // 比赛组号,写定为1
+  optional uint32 ring_no     = 4;  // 擂台号
+
+
+  //=0 上擂请求 =1 下擂请求,=2 发起挑战, =3 不挑战了  c->s s->c
+//=10  基数变了 这项只用于s->c
+  optional uint32 act_type = 5;   
+  optional uint64 att_userid = 6; //关联的用户ID
+}
+// 
+message  RingActionInd{
+
+
+  optional uint32 plan_id     = 1;  // 赛事ID
+  optional uint64 match_id    = 2;  // 比赛ID
+  optional uint64 group_id    = 3;  // 比赛ID
+  optional uint32 ring_no     = 4;  // 特殊擂台号n
+
+
+  //=0 上擂请求 =1 下擂请求,=2 发起挑战, =3 不挑战了  c->s s->c
+  //=4 玩家金币不足自动离桌了
+  //=5 擂主选择了其他玩家开战了
+  //=6 擂主离开了
+  //=7 擂主选择不继续了
+  //=10  基数变了 这项只用于s->c
+  optional uint32 act_type    = 5;   
+
+  optional uint32 result_code = 6;    //=1表示成功,其他表示失败
+  /*
+  act_type =0 
+  result_code =1 成功
+              =102 金币不足,请退出重新报号,进行补充
+              =103 所有擂台都满
+
+  act_type=1 
+  resutl_code =1 下擂成功
+
+  act_type=2 
+  resutl_code =1 成功
+              =102 
+              =3 当前擂台playing
+
+
+
+
+  */
+
+
+  optional string result_info = 7;
+  optional int64  new_base    = 8;  //新的基数,只有当是基数变了才ok
+  optional uint32 timeout_second =9;      //超时秒数
+}
+
+message  SwitchGroupReq{
+  optional uint32 plan_id     = 1;  // 赛事ID
+  optional uint64 match_id    = 2;  // 比赛ID
+  optional uint64 match_group= 3;  // 比赛组ID  //用户当前所在组
+  optional uint64 dest_group  =4;   //目标比赛组
+}
+
+message  SwitchGroupRsp{
+  optional uint32 plan_id     = 1;  // 赛事ID
+  optional uint64 match_id    = 2;  // 比赛ID
+  optional uint64 match_group    = 3;  // 比赛组ID      //用户当前所在组
+  optional uint64 dest_group  =4;   // 目标比赛组
+  optional uint32 result_code = 6;  //=1表示成功,其他表示失败
+  optional string result_info = 7;
+}
+/*
+接下来该局的税与费
+*/
+message RingNextRoundFee{
+  optional uint64 match_id       =2;  // 比赛ID
+  optional uint64 match_group    =3;  // 比赛组ID      //用户当前所在组 
+  optional uint32 ring_no        =4;   //擂台号
+  optional int64  score_base     =5;   //基数
+  optional int64  tax            =6;   //税
+  optional uint64 table_id       =7;
+  optional int64  host_total_win =8;    //本擂台在这二人对战中的累计输赢
+};
+
+message RoomTaskPrize{
+/*
+= 1连胜奖励
+= 2 局数奖励
+= 3 猎杀奖励
+*/
+  optional uint32  prize_type =1; //=
+  optional uint32  prize_data = 2; //第几连胜,或第几局
+};
+

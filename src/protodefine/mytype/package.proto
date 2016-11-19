@@ -1,0 +1,10 @@
+package bs;
+message PackageHeader{
+	optional uint32 version_no=1;	//版本号
+	optional uint32 encrypt_type=2; //加密类型
+	required uint32 cmd_kind=3;
+	required uint32 cmd_subid=4;
+	optional uint64 session_id=5;
+	optional bytes	 other=6;
+};
+

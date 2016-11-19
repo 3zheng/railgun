@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+import "protodefine/mytype/types.proto";
+
+package bs.tcp;
+
+//网络层消息
+
+enum CMDID_Tcp{
+	IDUnknow = 0;	//0保留
+	
+	IDTCPTransferMsg = 1;		//TCP消息传输报文
+	IDTCPSessionCome = 2;		//新建了一个TCP会话
+	IDTCPSessionClose = 3;		//关闭了一个TCP会话
+	IDTCPSessionKick = 4;		//主动要求关闭一个TCP会话
+	
+	IDLast=100;
+};
+
+
+message	TCPTransferMsg{
+	types.BaseInfo base = 1; 
+	uint32	data_kind_id = 2;
+	uint32	data_sub_id = 3;
+	bytes	data=4;
+};
+
+message TCPSessionCome{
+	types.BaseInfo base = 1; 
+};
+
+message TCPSessionClose{
+	types.BaseInfo base = 1; 
+};
+
+message TCPSessionKick{
+	types.BaseInfo base = 1; 
+};

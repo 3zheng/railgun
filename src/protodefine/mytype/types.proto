@@ -1,0 +1,112 @@
+syntax = "proto3";
+
+package bs.types;
+
+enum CMDKindId{
+	NullType = 0;	//保留
+
+	IDKindLogger = 8;		///日志
+	IDKindNetTCP = 9;		//对应的tcp.proto,因为怕取名net.proto和golang的标准库冲突了就麻烦了
+	IDKindRouter = 10;		///路由类 
+	IDKindAppFrame = 11;	///App之间交互的一些通用报文，简化设计
+	IDKindGate = 12;		///对应gate.proto
+	IDKindClient = 13;		///客户端类
+	IDKindMatchClient = 14;	///match客户端类
+	IDKindMCMS = 15;		/// mc与ms之间的交互
+	IDKindTableLogic = 16;	/// mp与TableLogic之间的交互 
+	IDKindFund = 17;		//财富类
+	IDKindHallClient = 18;	//大厅客户端类
+	IDKindMatchPhase = 19;	//比赛过程大类
+	IDKindRankList = 20;	//比赛排名大类
+	IDKindList = 21;
+	IDKindMatchDB = 22;
+
+	IDKindPrivateInternal = 0x100;	// 内部私有	
+	IDKindGameStart = 0x120;		// 开始具体游戏
+	IDLast = 0x0FFE;				//最后一个4095
+};
+
+enum EnumAppId{
+	UnknowId = 0;
+	Send2All = 1;		//发送到所有
+	Send2AnyOne = 2;	//发送到任意一个
+};
+
+
+enum EnumAppType{
+	UnknowType = 0;
+	Gate = 5;				//网关
+	Router = 6;				//路由中继器
+	Login = 7;				//登录管理
+	Online = 8;				//在线管理
+	Fund = 9;				//财富
+	List = 10;				//列表
+
+	FreeMatch = 12;			//
+	Match = 13;				//
+	TableLogic = 14;		//
+	MatchPhase = 15;		//
+	RankList = 16;			//
+
+	MatchDB = 18;			//
+
+	Conect_To_Gold = 19;	//
+
+	Tool = 0xE0;			//工具
+	Last = 0xFE;			//
+	
+};
+
+message	BaseInfo{
+	uint32 kind_id = 1;
+	uint32 sub_id = 2;
+	uint64 conn_id = 3;			//conn_id
+	uint64 gate_conn_id = 4;	//如果这个报文来自客户端会自带gate_conn_id 和 conn_id相等
+	string remote_add = 5;		//对端IP地址和端口
+	uint32 att_apptype = 6;		//报文关联的apptype,在收到的时候代表来源的apptype,在发出去的时候代表目标的apptype
+	uint32 att_appid = 7;		//报文关联的appid,在收到的时候代表来源的appid,在发出去的时候代表目标的appid
+};
+
+//
+//基础用户信息 
+//
+message BaseUserInfo {
+
+	enum UserType{
+		UNKNOW = 0;	//未知
+		Normal = 1;	//正常类型
+
+		Robot=10;	//机器人
+	};
+	uint64	user_id =1;         //用户ID 
+	uint64	game_id=2;			//数字ID
+	uint32	gender=3;			//性别
+	uint32	vip_level=4;		//vip级别 数据库木有
+	uint32	vip_endday=5;		//vip结束日期 数据库木有
+	uint32	market_id=6;		//所属渠道 未知数据库木有
+	uint32	face_id=7;			//头像id
+	string	custom_face=8;		//自定义的图像地址
+	string	nick_name=9;		//昵称
+
+	uint32	manager_right=10;	//管理权限
+	uint32	user_right=11;		//用户权限
+	UserType user_type=12;		//用户类别
+}
+
+//
+//用户当前连接信息
+//
+message  UserSessionInfo{
+	uint32 gate_id=1;			//来自哪个gate
+	uint64 gate_conn_id =2;		//gate 相关连接
+	string client_IP = 9;		//客户端的IP
+};
+
+
+// 财富类型项
+message FundItem{
+	uint32 id= 2;
+	uint64 count=3;
+	string name=4;	
+
+};
