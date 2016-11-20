@@ -3,11 +3,11 @@ package DialManager
 
 //导入TcpListenManager是为了借用粘包处理的函数
 import (
-	serverManger "TcpListenManager"
 	"bytes"
 	"fmt"
 	"net"
-	bs_tcp "protodefine/tcpnet"
+	serverManger "railgun/TcpListenManager"
+	bs_tcp "railgun/protodefine/tcpnet"
 
 	proto "github.com/golang/protobuf/proto"
 )

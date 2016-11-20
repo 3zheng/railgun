@@ -1,14 +1,14 @@
 package main
 
 import (
-	"PoolAndAgent"
 	"fmt"
-	bs_proto "protodefine"
-	bs_client "protodefine/client"
-	bs_gate "protodefine/gate"
-	bs_types "protodefine/mytype"
-	bs_router "protodefine/router"
-	bs_tcp "protodefine/tcpnet"
+	"railgun/PoolAndAgent"
+	bs_proto "railgun/protodefine"
+	bs_client "railgun/protodefine/client"
+	bs_gate "railgun/protodefine/gate"
+	bs_types "railgun/protodefine/mytype"
+	bs_router "railgun/protodefine/router"
+	bs_tcp "railgun/protodefine/tcpnet"
 	"time"
 
 	proto "github.com/golang/protobuf/proto"

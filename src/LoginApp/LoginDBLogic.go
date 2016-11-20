@@ -1,10 +1,10 @@
 package main
 
 import (
-	"PoolAndAgent"
 	"fmt"
-	bs_proto "protodefine"
-	bs_client "protodefine/client"
+	"railgun/PoolAndAgent"
+	bs_proto "railgun/protodefine"
+	bs_client "railgun/protodefine/client"
 
 	proto "github.com/golang/protobuf/proto"
 )

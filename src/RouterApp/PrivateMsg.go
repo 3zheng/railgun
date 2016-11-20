@@ -1,7 +1,7 @@
 package main
 
 import (
-	"PoolAndAgent"
+	"railgun/PoolAndAgent"
 
 	proto "github.com/golang/protobuf/proto"
 )

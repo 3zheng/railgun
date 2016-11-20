@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-import "protodefine/mytype/types.proto";
+import "railgun/protodefine/mytype/types.proto";
 
 package bs.tcp;
 

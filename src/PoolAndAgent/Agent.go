@@ -1,14 +1,14 @@
 package PoolAndAgent
 
 import (
-	"DialManager"
-	TcpManager "TcpListenManager"
 	"database/sql"
 	"fmt"
-	bs_proto "protodefine"
-	bs_types "protodefine/mytype"
-	bs_router "protodefine/router"
-	bs_tcp "protodefine/tcpnet"
+	"railgun/DialManager"
+	TcpManager "railgun/TcpListenManager"
+	bs_proto "railgun/protodefine"
+	bs_types "railgun/protodefine/mytype"
+	bs_router "railgun/protodefine/router"
+	bs_tcp "railgun/protodefine/tcpnet"
 	"strconv"
 	"time"
 

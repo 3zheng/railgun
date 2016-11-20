@@ -2,7 +2,7 @@ package bs_proto
 
 import (
 	"fmt"
-	bs_types "protodefine/mytype"
+	bs_types "railgun/protodefine/mytype"
 	"runtime"
 )
 

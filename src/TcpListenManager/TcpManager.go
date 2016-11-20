@@ -5,8 +5,8 @@ import (
 	"bytes"
 	"fmt"
 	"net"
-	bs_proto "protodefine"
-	bs_tcp "protodefine/tcpnet"
+	bs_proto "railgun/protodefine"
+	bs_tcp "railgun/protodefine/tcpnet"
 	"sync"
 	"sync/atomic"
 

@@ -2,9 +2,9 @@
 package main
 
 import (
-	"PoolAndAgent"
 	"fmt"
-	bs_types "protodefine/mytype"
+	"railgun/PoolAndAgent"
+	bs_types "railgun/protodefine/mytype"
 )
 
 func CreateGateLogicInstance() *GateLogic {
