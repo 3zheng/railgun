@@ -2,12 +2,12 @@
 package main
 
 import (
-	"DialManager"
 	"fmt"
-	bs_client "protodefine/client"
-	bs_gate "protodefine/gate"
-	bs_types "protodefine/mytype"
-	bs_tcp "protodefine/tcpnet"
+	"railgun/DialManager"
+	bs_client "railgun/protodefine/client"
+	bs_gate "railgun/protodefine/gate"
+	bs_types "railgun/protodefine/mytype"
+	bs_tcp "railgun/protodefine/tcpnet"
 
 	proto "github.com/golang/protobuf/proto"
 )

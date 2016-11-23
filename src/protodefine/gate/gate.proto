@@ -31,7 +31,7 @@ message	PulseRsp{
 	bytes	attachd_data = 3;
 };
 
-message TransferData{
+message GateTransferData{
 	types.BaseInfo base = 1; 
 	uint32 att_apptype = 2;		//目标或源apptype
 	uint32 att_appid = 3;		//目标或源appid

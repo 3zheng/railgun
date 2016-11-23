@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"railgun/DialManager"
-	TcpManager "railgun/TcpListenManager"
+	ListenManager "railgun/TcpListenManager"
 	bs_proto "railgun/protodefine"
 	bs_types "railgun/protodefine/mytype"
 	bs_router "railgun/protodefine/router"
@@ -22,7 +22,7 @@ type NetAgent struct {
 
 func (*NetAgent) SendMsg(req *bs_tcp.TCPTransferMsg) {
 	var connId uint64 = req.Base.ConnId
-	sess := TcpManager.GetSessionByConnId(connId)
+	sess := ListenManager.GetSessionByConnId(connId)
 	if sess == nil { //判断是否为空
 		return
 	}

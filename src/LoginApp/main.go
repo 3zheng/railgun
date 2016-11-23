@@ -33,7 +33,7 @@ func main() {
 		//数据库逻辑协程间最好不要有数据通信，都应该通过主逻辑POOL与主逻辑进行通信
 		//相对的主逻辑最好只用一个协程，这样写业务逻辑也好写，
 		pDBLogic := CreateLoginDBInstance()
-		pDBProcess := PoolAndAgent.CreateADODatabase("root:hello123@tcp(localhost:3306)/gotest?charset=utf8")
+		pDBProcess := PoolAndAgent.CreateADODatabase("root:123456@tcp(localhost:3306)/gotest?charset=utf8")
 		//将他们都与Pool绑定起来
 		pDBPool.AddLogicProcess(pDBLogic)
 		pDBPool.AddDataBaseProcess(pDBProcess)
@@ -77,5 +77,4 @@ func main() {
 			}
 		}
 	}
-
 }

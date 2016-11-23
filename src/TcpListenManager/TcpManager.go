@@ -1,5 +1,5 @@
 // TcpManager project TcpManager.go
-package TcpManager
+package ListenManager
 
 import (
 	"bytes"
@@ -24,7 +24,7 @@ type ConnectionSession struct {
 	tcpConn       *net.TCPConn                //用于发送接收消息的tcp连接实体
 	cache         *bytes.Buffer               //自动扩展的用于粘包处理的缓存区
 	MsgWriteCh    chan *bs_tcp.TCPTransferMsg //从接受来自逻辑层消息的管道
-	wg            sync.WaitGroup              //在close
+	wg            sync.WaitGroup              //在close时阻塞等待两个协程结束
 	isWriteClosed int32                       //SendPackege协程是否已经结束的标志位
 	isReadClosed  int32                       //RecvPackege协程是否已经结束的标志位
 	IsSendKickMsg int32                       //MsgPool是否处理了Kick报文或者说是否已经调用了CloseSession的标志位,MsgPool也会访问，所以大写

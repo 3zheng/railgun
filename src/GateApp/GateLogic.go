@@ -49,10 +49,6 @@ func (this *GateLogic) Init(myPool *PoolAndAgent.SingleMsgPool) bool {
 }
 
 func (this *GateLogic) ProcessReq(req proto.Message, pDatabase *PoolAndAgent.CADODatabase) {
-	switch req := req.(type) {
-	case *bs_tcp.TCPSessionCome:
-		fmt.Println("ProcessReq收到了TCPSessionCome, base=", req.Base)
-	}
 	if req == nil {
 		return
 	}
@@ -64,8 +60,8 @@ func (this *GateLogic) ProcessReq(req proto.Message, pDatabase *PoolAndAgent.CAD
 		this.Network_OnConnOK(data)
 	case *bs_tcp.TCPSessionClose:
 		this.Network_OnConnClose(data)
-	case *bs_gate.TransferData:
-		this.Gate_TransferData(data)
+	case *bs_gate.GateTransferData:
+		this.Gate_GateTransferData(data)
 	case *bs_gate.PulseReq:
 		this.Gate_PulseReq(data)
 	case *bs_router.RouterTransferData:
@@ -138,7 +134,7 @@ func (this *GateLogic) Gate_PulseReq(req *bs_gate.PulseReq) {
 }
 
 //收到了客户端传来的消息
-func (this *GateLogic) Gate_TransferData(req *bs_gate.TransferData) {
+func (this *GateLogic) Gate_GateTransferData(req *bs_gate.GateTransferData) {
 	connElem, ok := this.mMapConnection[req.Base.ConnId]
 	if !ok {
 		//FIXME logger
@@ -301,7 +297,7 @@ func (this *GateLogic) Client_OnLoginRsp(req *bs_client.LoginRsp) {
 //向客户端发送报文
 func (this *GateLogic) SendToClient(req proto.Message, pBase *bs_types.BaseInfo) {
 	//先把其他报文转成bs_gate.TransferData然后再转成bs_tcp.TCPTransferMsg
-	var gateTrans *bs_gate.TransferData = nil
+	var gateTrans *bs_gate.GateTransferData = nil
 	gateTrans = Gate_CreateGateTransferMsgByCommonMsg(req)
 	if gateTrans != nil {
 		//将bs_gate.TransferData报文转为bs_tcp.TCPTransferMsg

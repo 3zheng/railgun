@@ -81,9 +81,6 @@ message BaseUserInfo {
 	uint64	user_id =1;         //用户ID 
 	uint64	game_id=2;			//数字ID
 	uint32	gender=3;			//性别
-	uint32	vip_level=4;		//vip级别 数据库木有
-	uint32	vip_endday=5;		//vip结束日期 数据库木有
-	uint32	market_id=6;		//所属渠道 未知数据库木有
 	uint32	face_id=7;			//头像id
 	string	custom_face=8;		//自定义的图像地址
 	string	nick_name=9;		//昵称

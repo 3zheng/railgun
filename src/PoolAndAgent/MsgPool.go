@@ -3,7 +3,7 @@ package PoolAndAgent
 
 import (
 	"fmt"
-	TcpManager "railgun/TcpListenManager"
+	ListenManager "railgun/TcpListenManager"
 	bs_proto "railgun/protodefine"
 	bs_types "railgun/protodefine/mytype"
 	bs_router "railgun/protodefine/router"
@@ -74,7 +74,7 @@ func (this *SingleMsgPool) InitAndRun(InitMsg proto.Message) bool {
 	//判断有没有绑定netagent，如果有那么要创建相应的tcpManager和NetToLogicChannel
 	if this.bindingNetAgent != nil {
 		this.NetToLogicChannel = make(chan proto.Message, CHANNEL_LENGTH)
-		go TcpManager.CreateSever(this.bindingNetAgent.IpAddress, this.NetToLogicChannel) //创建服务端监听协程
+		go ListenManager.CreateSever(this.bindingNetAgent.IpAddress, this.NetToLogicChannel) //创建服务端监听协程
 	}
 	if this.bindingRouterAgent != nil {
 		this.RouterToLogicChannel = make(chan proto.Message, CHANNEL_LENGTH)
@@ -88,7 +88,7 @@ func (this *SingleMsgPool) InitAndRun(InitMsg proto.Message) bool {
 				case v := <-this.NetToLogicChannel: //阻塞读取NetToLogicChannel,来自NetToLogicChannel的报文都在属于tcp.proto
 					switch data := v.(type) {
 					case *bs_tcp.TCPSessionKick: //来自NetToLogicChannel的kick报文要做特殊处理，不上传给logic层
-						sess := TcpManager.GetSessionByConnId(data.Base.ConnId)
+						sess := ListenManager.GetSessionByConnId(data.Base.ConnId)
 						if sess != nil && atomic.LoadInt32(&(sess.IsSendKickMsg)) == 0 { //原子操作，判断sess.IsSendKickMsg == 0
 							go sess.CloseSession(this.NetToLogicChannel) //关闭此session
 						}
@@ -245,7 +245,7 @@ func (this *SingleMsgPool) SendMsgToClientByNetAgent(req proto.Message) {
 		case *bs_tcp.TCPTransferMsg:
 			this.bindingNetAgent.SendMsg(data)
 		case *bs_tcp.TCPSessionKick:
-			sess := TcpManager.GetSessionByConnId(data.Base.ConnId)
+			sess := ListenManager.GetSessionByConnId(data.Base.ConnId)
 			if sess != nil && atomic.LoadInt32(&(sess.IsSendKickMsg)) == 0 { //原子操作
 				go sess.CloseSession(this.NetToLogicChannel) //关闭此session
 			}

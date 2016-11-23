@@ -45,7 +45,7 @@ func Gate_CreateCommonMsgByTCPTransferMsg(req proto.Message) proto.Message {
 				}
 				return msg
 			case uint32(bs_gate.CMDID_Gate_IDTransferData):
-				msg := new(bs_gate.TransferData)
+				msg := new(bs_gate.GateTransferData)
 				err := proto.Unmarshal(data.Data, msg)
 				bs_proto.SetBaseKindAndSubId(msg)
 				bs_proto.CopyBaseExceptKindAndSubId(msg.Base, data.Base)
@@ -139,8 +139,8 @@ func Gate_CreateCommonMsgByRouterTransferMsg(req *bs_router.RouterTransferData) 
 	return nil
 }
 
-func Gate_CreateGateTransferMsgByCommonMsg(req proto.Message) *bs_gate.TransferData {
-	gateTrans := new(bs_gate.TransferData)
+func Gate_CreateGateTransferMsgByCommonMsg(req proto.Message) *bs_gate.GateTransferData {
+	gateTrans := new(bs_gate.GateTransferData)
 	bs_proto.SetBaseKindAndSubId(gateTrans)
 
 	switch data := req.(type) {

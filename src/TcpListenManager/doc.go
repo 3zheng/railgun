@@ -1,6 +1,6 @@
-// TcpManager project doc.go
+// ListenManager project doc.go
 
 /*
-TcpManager document
+ListenManager document
 */
-package TcpManager
+package ListenManager

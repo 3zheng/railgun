@@ -62,7 +62,7 @@ func SetBaseKindAndSubId(input interface{}) (bool, *bs_types.BaseInfo) {
 		data.Base.KindId = uint32(bs_types.CMDKindId_IDKindGate)
 		data.Base.SubId = uint32(bs_gate.CMDID_Gate_IDPulseRsp)
 		return true, data.Base
-	case *bs_gate.TransferData:
+	case *bs_gate.GateTransferData:
 		if data.Base == nil {
 			data.Base = new(bs_types.BaseInfo)
 		}
