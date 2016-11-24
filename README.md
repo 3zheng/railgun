@@ -1,5 +1,5 @@
 #railgun
-一个简单的CS模式的游戏服务器框架，引入protobuf第三方库作为报文协议
+一个简单的CS模式的游戏服务器框架，引入protobuf第三方库作为报文协议，mysql作为数据库，Go-mysql-driver作为驱动库。这三个东西是需要自己另外安装
 
 ##1.服务器架构
 参考链接 http://blog.csdn.NET/easy_mind/article/details/53321919
