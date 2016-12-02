@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"railgun/PoolAndAgent"
 	"time"
 
+	"github.com/3zheng/railgun/PoolAndAgent"
 	bs_proto "github.com/3zheng/railgun/protodefine"
 	bs_client "github.com/3zheng/railgun/protodefine/client"
 	bs_gate "github.com/3zheng/railgun/protodefine/gate"
