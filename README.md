@@ -5,7 +5,7 @@
 使用命令 go get -u github.com/3zheng/railgun 来download
 如果不想使用go get -u github.com/3zheng/railgun命令可以去 http://git.oschina.net/poorbreast/railgun 这里开源中国上下载非import github.com/3zheng/railgun的工程源码
 
-编译
+编译：
 GateApp,RouterApp,LoginApp是package main的exe工程，所以可以单独拿出来放到$GOPATH目录下，不会影响编译
 
 ##1.服务器架构
@@ -35,7 +35,8 @@ Package bs_proto的SetBaseInfo.go中的SetBaseKindAndSubId函数，要根据prot
 正常画风：如果项目对你有帮助，请点个☆，你的随手点赞是我继续改进的动力。
 恶意卖萌画风：给人家点个☆嘛，点一下又不会怀孕(;¬_¬) 没粉丝就没动力，没时间。全部都是时辰的错
 
-文档连接：http://blog.csdn.net/easy_mind/article/details/53260574
+文档连接：http://blog.csdn.net/easy_mind/article/details/53260574 
+PS:如果文档或者参考链接打不开的话，可能是我刚修改了文档，CSDN还在审核，需要审核过了才会重新显示。将来可能会放在studygolang.com这里，这里好像不审核。
 
 贡献者名单：
 中二病也要当码畜	email:914509007@qq.com
