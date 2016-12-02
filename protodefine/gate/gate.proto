@@ -1,0 +1,94 @@
+syntax = "proto3";
+
+import "railgun/protodefine/mytype/types.proto";
+
+package bs.gate;
+
+enum CMDID_Gate{
+	IDUnknow = 0;			//0保留
+	
+	IDPulseReq = 1;			//测速请求
+	IDPulseRsp = 2;			//测速回复
+	IDTransferData = 3;		//gate的转发数据包
+	IDAuthInfo = 4;			//连接认证信息 暂时用不上
+	IDLoginToken = 5;		//gate向client发送的登录token 暂时用不上
+	IDHelloReq = 6;			//Client->Gate发请求 暂时用不上
+	IDHelloRsp = 7;			//Gate->Client发回复 暂时用不上
+	
+	IDLast=100;
+};
+
+message	PulseReq{
+	types.BaseInfo base = 1; 
+	uint32 my_speed=2;
+	uint32 speed_data=3;
+	bytes  attached_data=4;
+};
+
+message	PulseRsp{
+	types.BaseInfo base = 1; 
+	uint32	speed_data = 2;
+	bytes	attachd_data = 3;
+};
+
+message GateTransferData{
+	types.BaseInfo base = 1; 
+	uint32 att_apptype = 2;		//目标或源apptype
+	uint32 att_appid = 3;		//目标或源appid
+	uint32 data_cmd_kind = 4;	
+	uint32 data_cmd_subid = 5;
+	bytes  data = 6;
+	uint32 req_id = 7;	//附加数据
+	string client_remote_address = 8;	//客户端的ip及其端口
+};
+
+
+message AuthInfo{
+	types.BaseInfo base = 1;	
+	uint64 user_id = 2;			//用户id
+	uint32 reason = 3;			//变更原因
+	string info = 4;			//描述信息
+   
+};
+
+message LoginToken{
+	types.BaseInfo base = 1; 
+	uint32 login_token=2;
+};
+
+message  HelloReq{
+	types.BaseInfo base = 1; 
+	uint32  ad_id=2;
+	string  others=3;
+	uint32  builder_no =4;      
+
+	uint32  game_kind = 5;
+	string  client_version=6;
+
+	//=1 表示pc win7 winxp
+	//=2 表示ios
+	//=3 表示android
+	//=4 表示win10
+	uint32  client_type = 7;
+};
+
+
+message  HelloRsp{
+   enum RspFlag{
+      UNKNOWN=0;
+      EncryptInfo=1;	//加密信息	encrypt_key这是存在的
+      AdviceNewGate=2;	//建议客户端换一个gate连接，可能因为当前gate的负载较大
+      LoginToken=4;		//登录令牌
+   }
+   types.BaseInfo base = 1; 
+   uint32 rsp_flag= 2;				//通知的消息内容  
+   repeated  string gate_address=3;	//其他gate地址
+   bytes encrypt_key = 4;			//私钥 
+   uint32 login_token=5;			//登录令牌token
+   
+   //=0 表示最新版本
+   //=1 表示有新版本，但当前版本还可以用
+   //=2 强制用户更新版本，当前连接会被断开
+   uint32 version_result = 6;
+   string down_url = 7;				//如果有新的版本，下载地址
+}
