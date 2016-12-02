@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
-	bs_proto "railgun/protodefine"
-	bs_types "railgun/protodefine/mytype"
-	bs_router "railgun/protodefine/router"
-	bs_tcp "railgun/protodefine/tcpnet"
 
+	bs_proto "github.com/3zheng/railgun/protodefine"
+	bs_types "github.com/3zheng/railgun/protodefine/mytype"
+	bs_router "github.com/3zheng/railgun/protodefine/router"
+	bs_tcp "github.com/3zheng/railgun/protodefine/tcpnet"
 	proto "github.com/golang/protobuf/proto"
 )
 

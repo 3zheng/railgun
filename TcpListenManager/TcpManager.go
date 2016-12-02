@@ -5,11 +5,11 @@ import (
 	"bytes"
 	"fmt"
 	"net"
-	bs_proto "railgun/protodefine"
-	bs_tcp "railgun/protodefine/tcpnet"
 	"sync"
 	"sync/atomic"
 
+	bs_proto "github.com/3zheng/railgun/protodefine"
+	bs_tcp "github.com/3zheng/railgun/protodefine/tcpnet"
 	proto "github.com/golang/protobuf/proto"
 )
 

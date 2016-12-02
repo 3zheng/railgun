@@ -3,11 +3,11 @@ package bs_proto
 import (
 	"fmt"
 
-	bs_client "railgun/protodefine/client"
-	bs_gate "railgun/protodefine/gate"
-	bs_types "railgun/protodefine/mytype"
-	bs_router "railgun/protodefine/router"
-	bs_tcp "railgun/protodefine/tcpnet"
+	bs_client "github.com/3zheng/railgun/protodefine/client"
+	bs_gate "github.com/3zheng/railgun/protodefine/gate"
+	bs_types "github.com/3zheng/railgun/protodefine/mytype"
+	bs_router "github.com/3zheng/railgun/protodefine/router"
+	bs_tcp "github.com/3zheng/railgun/protodefine/tcpnet"
 )
 
 //设置input的baseinfo值，如果返回false说明这个类型找不到

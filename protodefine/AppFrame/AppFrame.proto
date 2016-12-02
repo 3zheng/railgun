@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-import "railgun/protodefine/mytype/types.proto";
+import "github.com/3zheng/railgun/protodefine/mytype/types.proto";
 
 package bs.appframe;
 

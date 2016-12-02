@@ -3,8 +3,9 @@ package main
 
 import (
 	"fmt"
-	"railgun/PoolAndAgent"
-	bs_types "railgun/protodefine/mytype"
+
+	"github.com/3zheng/railgun/PoolAndAgent"
+	bs_types "github.com/3zheng/railgun/protodefine/mytype"
 )
 
 func CreateLoginLogicInstance() *LoginMainLogic {

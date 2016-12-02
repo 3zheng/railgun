@@ -6,9 +6,9 @@ import (
 	"bytes"
 	"fmt"
 	"net"
-	serverManger "railgun/TcpListenManager"
-	bs_tcp "railgun/protodefine/tcpnet"
 
+	serverManger "github.com/3zheng/railgun/TcpListenManager"
+	bs_tcp "github.com/3zheng/railgun/protodefine/tcpnet"
 	proto "github.com/golang/protobuf/proto"
 )
 

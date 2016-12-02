@@ -3,14 +3,15 @@ package PoolAndAgent
 import (
 	"database/sql"
 	"fmt"
-	"railgun/DialManager"
-	ListenManager "railgun/TcpListenManager"
-	bs_proto "railgun/protodefine"
-	bs_types "railgun/protodefine/mytype"
-	bs_router "railgun/protodefine/router"
-	bs_tcp "railgun/protodefine/tcpnet"
 	"strconv"
 	"time"
+
+	"github.com/3zheng/railgun/DialManager"
+	ListenManager "github.com/3zheng/railgun/TcpListenManager"
+	bs_proto "github.com/3zheng/railgun/protodefine"
+	bs_types "github.com/3zheng/railgun/protodefine/mytype"
+	bs_router "github.com/3zheng/railgun/protodefine/router"
+	bs_tcp "github.com/3zheng/railgun/protodefine/tcpnet"
 
 	_ "github.com/go-sql-driver/mysql"
 	proto "github.com/golang/protobuf/proto"

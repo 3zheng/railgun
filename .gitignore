@@ -1,3 +1,4 @@
 *.exe
 /src/RouterApp/*.exe
 src
+pkg

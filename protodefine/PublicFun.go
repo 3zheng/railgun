@@ -2,8 +2,9 @@ package bs_proto
 
 import (
 	"fmt"
-	bs_types "railgun/protodefine/mytype"
 	"runtime"
+
+	bs_types "github.com/3zheng/railgun/protodefine/mytype"
 )
 
 func GetAppTypeName(appType uint32) string {

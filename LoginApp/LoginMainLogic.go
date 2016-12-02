@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
-	"railgun/PoolAndAgent"
-	bs_client "railgun/protodefine/client"
-	bs_types "railgun/protodefine/mytype"
-	bs_router "railgun/protodefine/router"
 
+	"github.com/3zheng/railgun/PoolAndAgent"
+	bs_client "github.com/3zheng/railgun/protodefine/client"
+	bs_types "github.com/3zheng/railgun/protodefine/mytype"
+	bs_router "github.com/3zheng/railgun/protodefine/router"
 	proto "github.com/golang/protobuf/proto"
 )
 
