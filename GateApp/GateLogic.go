@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/3zheng/railgun/PoolAndAgent"
@@ -86,13 +87,16 @@ func (this *GateLogic) Network_OnConnOK(req *bs_tcp.TCPSessionCome) {
 	fmt.Println("收到了TCPSessionCome报文")
 	if req.Base.ConnId > 0xefffffff {
 		fmt.Println("报告大王，连接快被分配完了，快点采取行动")
+		log.Println("报告大王，连接快被分配完了，快点采取行动")
 	}
 
 	if _, ok := this.mMapConnection[req.Base.ConnId]; ok {
 		//FIXME 一般这不可能发生
 		fmt.Println("发生了不可能事件，有重复的connId发生，connId = ", req.Base.ConnId)
+		log.Println("发生了不可能事件，有重复的connId发生，connId = ", req.Base.ConnId)
 	} else {
 		fmt.Println("新建了一个客户端连接，connId = ", req.Base.ConnId)
+		log.Println("新建了一个客户端连接，connId = ", req.Base.ConnId)
 		unixNow := time.Now().Unix()
 		this.mMapConnection[req.Base.ConnId] = GateConnection{
 			connId:           req.Base.ConnId,
@@ -109,6 +113,7 @@ func (this *GateLogic) Network_OnConnOK(req *bs_tcp.TCPSessionCome) {
 func (this *GateLogic) Network_OnConnClose(req *bs_tcp.TCPSessionClose) {
 	connId := req.Base.ConnId
 	fmt.Println("conn_id=", req.Base.ConnId, "断开连接")
+	log.Println("conn_id=", req.Base.ConnId, "断开连接")
 	connElem, ok := this.mMapConnection[connId]
 	if !ok {
 		return
@@ -139,6 +144,7 @@ func (this *GateLogic) Gate_GateTransferData(req *bs_gate.GateTransferData) {
 	if !ok {
 		//FIXME logger
 		fmt.Println("找不到对应connId=", req.Base.ConnId)
+		log.Println("找不到对应connId=", req.Base.ConnId)
 		return
 	}
 
@@ -171,6 +177,12 @@ func (this *GateLogic) Gate_GateTransferData(req *bs_gate.GateTransferData) {
 			",my_user_id=", connElem.userId,
 			",dest_appid=", req.AttAppid,
 			",dest_apptype=", bs_proto.GetAppTypeName(req.AttApptype))
+		log.Println("目标地址为0,来自client,connid=", connElem.connId,
+			",kind_id=", req.DataCmdKind,
+			",sub_id=", req.DataCmdSubid,
+			",my_user_id=", connElem.userId,
+			",dest_appid=", req.AttAppid,
+			",dest_apptype=", bs_proto.GetAppTypeName(req.AttApptype))
 		return //且不往router发送了
 	}
 	//向router发送消息
@@ -197,6 +209,12 @@ func (this *GateLogic) Router_OnRouterTransferData(req *bs_router.RouterTransfer
 				",src_appid=", req.SrcAppid,
 				",src_apptype=", req.SrcApptype)
 			//可能需要通知写这个APP的程序猿
+			log.Println("user_id和conn_id均为0的报文, 来自router,connid=", req.AttGateconnid,
+				",kind_id=", req.DataCmdKind,
+				",sub_id=", req.DataCmdSubid,
+				",att_user_id=", req.AttUserid,
+				",src_appid=", req.SrcAppid,
+				",src_apptype=", req.SrcApptype)
 			return
 		}
 
@@ -205,6 +223,7 @@ func (this *GateLogic) Router_OnRouterTransferData(req *bs_router.RouterTransfer
 			if userElem, ok := this.mMapUser[userId]; !ok {
 				//如果用户不为0,又在mMapUser找不到对应用户，说明用户已断线离开,直接return
 				fmt.Println("用户已找不到，无法将该报文发往指定用户，可能该用户已经掉线，user_id=", userId)
+				log.Println("用户已找不到，无法将该报文发往指定用户，可能该用户已经掉线，user_id=", userId)
 				return
 			} else {
 				//对gateConnId重新赋值，当userId不为0时，以userId查map所得的connId为准
@@ -221,16 +240,29 @@ func (this *GateLogic) Router_OnRouterTransferData(req *bs_router.RouterTransfer
 				",att_user_id=", req.AttUserid,
 				",src_appid=", req.SrcAppid,
 				",src_apptype=", req.SrcApptype)
+			log.Println("找不到相应connId, 来自router,connid=", req.AttGateconnid,
+				",kind_id=", req.DataCmdKind,
+				",sub_id=", req.DataCmdSubid,
+				",my_user_id=", connElem.userId,
+				",att_user_id=", req.AttUserid,
+				",src_appid=", req.SrcAppid,
+				",src_apptype=", req.SrcApptype)
 		}
 
 		if req.AttUserid != 0 && connElem.isAuthenticated != true {
 			//若已经成功登录以后的
 			fmt.Println("该连接的用户尚未认证，但是却收到了发往该用户的报文，user_id=", req.AttUserid)
+			log.Println("该连接的用户尚未认证，但是却收到了发往该用户的报文，user_id=", req.AttUserid)
 			return
 		} else {
 			if gateConnId != req.AttGateconnid {
 				//就是在if userElem, ok := this.mMapUser[userId]; !ok被重新赋值了
 				fmt.Println("报文的gateconnid与gate自己记录的connid不匹配，可能该账号是顶号登录的",
+					",报文connid=", req.AttGateconnid,
+					",实际connid=", gateConnId,
+					",user_id=", userId,
+					",src_appid=", req.SrcAppid)
+				log.Println("报文的gateconnid与gate自己记录的connid不匹配，可能该账号是顶号登录的",
 					",报文connid=", req.AttGateconnid,
 					",实际connid=", gateConnId,
 					",user_id=", userId,
@@ -243,6 +275,8 @@ func (this *GateLogic) Router_OnRouterTransferData(req *bs_router.RouterTransfer
 	} else if req.DataDirection == bs_router.RouterTransferData_App2App {
 		//这个是发给gate自己的，而不是发给客户端的，需要gate app来处理
 		fmt.Println("收到了需要gate自己来处理的报文,SrcApptype=", req.SrcApptype, "SrcAppid=", req.SrcAppid,
+			"DataCmdKind=", req.DataCmdKind, "DataCmdSubid=", req.DataCmdSubid)
+		log.Println("收到了需要gate自己来处理的报文,SrcApptype=", req.SrcApptype, "SrcAppid=", req.SrcAppid,
 			"DataCmdKind=", req.DataCmdKind, "DataCmdSubid=", req.DataCmdSubid)
 		msg := Gate_CreateCommonMsgByRouterTransferMsg(req)
 		if msg != nil {
@@ -291,6 +325,7 @@ func (this *GateLogic) Client_OnLoginRsp(req *bs_client.LoginRsp) {
 	}
 	req.Base.ConnId = connId
 	fmt.Println("向client发送,将Base.ConnId重置后发送")
+	log.Println("向client发送,将Base.ConnId重置后发送")
 	this.SendToClient(req, req.Base)
 }
 
