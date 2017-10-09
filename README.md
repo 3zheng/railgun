@@ -1,3 +1,5 @@
+use MIT license：就是你想干啥就干啥的开源协议
+
 # railgun
 一个简单的CS模式的游戏服务器框架，引入protobuf第三方库作为报文协议，mysql作为数据库，Go-mysql-driver作为驱动库。这三个东西是需要自己另外安装
 
