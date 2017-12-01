@@ -2,6 +2,7 @@ package bs_proto
 
 import (
 	"fmt"
+	"reflect"
 
 	bs_client "github.com/3zheng/railgun/protodefine/client"
 	bs_gate "github.com/3zheng/railgun/protodefine/gate"
@@ -10,13 +11,9 @@ import (
 	bs_tcp "github.com/3zheng/railgun/protodefine/tcpnet"
 )
 
-//设置input的baseinfo值，如果返回false说明这个类型找不到
-func SetBaseKindAndSubId(input interface{}) (bool, *bs_types.BaseInfo) {
-	if input == nil {
-		return false, nil
-	}
+//CMDKindId_IDKindNetTCP大类
+func setTcpBase(input interface{}) (bool, *bs_types.BaseInfo) {
 	switch data := input.(type) {
-	//以下报文属于tcp.proto，CMDKindId_IDKindNetTCP大类
 	case *bs_tcp.TCPTransferMsg:
 		fmt.Println("报文类型为*bs_tcp.TCPTransferMsg")
 		if data.Base == nil {
@@ -41,13 +38,19 @@ func SetBaseKindAndSubId(input interface{}) (bool, *bs_types.BaseInfo) {
 		data.Base.SubId = uint32(bs_tcp.CMDID_Tcp_IDTCPSessionClose)
 		return true, data.Base
 	case *bs_tcp.TCPSessionKick:
-		if (*data).Base == nil {
-			(*data).Base = new(bs_types.BaseInfo)
+		if data.Base == nil {
+			data.Base = new(bs_types.BaseInfo)
 		}
-		(*data).Base.KindId = uint32(bs_types.CMDKindId_IDKindNetTCP)
-		(*data).Base.SubId = uint32(bs_tcp.CMDID_Tcp_IDTCPSessionKick)
+		data.Base.KindId = uint32(bs_types.CMDKindId_IDKindNetTCP)
+		data.Base.SubId = uint32(bs_tcp.CMDID_Tcp_IDTCPSessionKick)
 		return true, data.Base
-	//以下报文属于gate.proto,CMDKindId_IDKindGate大类
+	default:
+		return false, nil
+	}
+}
+
+func setGateBase(input interface{}) (bool, *bs_types.BaseInfo) {
+	switch data := input.(type) {
 	case *bs_gate.PulseReq:
 		if data.Base == nil {
 			data.Base = new(bs_types.BaseInfo)
@@ -69,7 +72,13 @@ func SetBaseKindAndSubId(input interface{}) (bool, *bs_types.BaseInfo) {
 		data.Base.KindId = uint32(bs_types.CMDKindId_IDKindGate)
 		data.Base.SubId = uint32(bs_gate.CMDID_Gate_IDTransferData)
 		return true, data.Base
-	//以下报文属于router.proto,CMDKindId_IDKindRouter大类
+	default:
+		return false, nil
+	}
+}
+
+func setRouterBase(input interface{}) (bool, *bs_types.BaseInfo) {
+	switch data := input.(type) {
 	case *bs_router.RouterTransferData:
 		if data.Base == nil {
 			data.Base = new(bs_types.BaseInfo)
@@ -91,7 +100,13 @@ func SetBaseKindAndSubId(input interface{}) (bool, *bs_types.BaseInfo) {
 		data.Base.KindId = uint32(bs_types.CMDKindId_IDKindRouter)
 		data.Base.SubId = uint32(bs_router.CMDID_Router_IDRegisterAppRsp)
 		return true, data.Base
-	//以下报文属于client.proto,CMDKindId_IDKindClient大类
+	default:
+		return false, nil
+	}
+}
+
+func setClientBase(input interface{}) (bool, *bs_types.BaseInfo) {
+	switch data := input.(type) {
 	case *bs_client.LoginReq:
 		if data.Base == nil {
 			data.Base = new(bs_types.BaseInfo)
@@ -168,6 +183,61 @@ func SetBaseKindAndSubId(input interface{}) (bool, *bs_types.BaseInfo) {
 		data.Base.KindId = uint32(bs_types.CMDKindId_IDKindClient)
 		data.Base.SubId = uint32(bs_client.CMDID_Client_IDKickUserRsp)
 		return true, data.Base
+	default:
+		return false, nil
+	}
+}
+
+//设置input的baseinfo值，如果返回false说明这个类型找不到
+func SetBaseKindAndSubId(input interface{}) (bool, *bs_types.BaseInfo) {
+	if input == nil {
+		return false, nil
+	}
+	switch reflect.TypeOf(input).String() {
+	//以下报文属于tcp.proto，CMDKindId_IDKindNetTCP大类
+	case "*bs_tcp.TCPTransferMsg":
+		fallthrough
+	case "*bs_tcp.TCPSessionCome":
+		fallthrough
+	case "*bs_tcp.TCPSessionClose":
+		fallthrough
+	case "*bs_tcp.TCPSessionKick":
+		return setTcpBase(input)
+	//以下报文属于gate.proto,CMDKindId_IDKindGate大类
+	case "*bs_gate.PulseReq":
+		fallthrough
+	case "*bs_gate.PulseRsp":
+		fallthrough
+	case "*bs_gate.GateTransferData":
+		return setGateBase(input)
+	//以下报文属于router.proto,CMDKindId_IDKindRouter大类
+	case "*bs_router.RouterTransferData":
+		fallthrough
+	case "*bs_router.RegisterAppReq":
+		fallthrough
+	case "*bs_router.RegisterAppRsp":
+		return setRouterBase(input)
+	//以下报文属于client.proto,CMDKindId_IDKindClient大类
+	case "*bs_client.LoginReq":
+		fallthrough
+	case "*bs_client.LoginRsp":
+		fallthrough
+	case "*bs_client.LogoutReq":
+		fallthrough
+	case "*bs_client.LogoutRsp":
+		fallthrough
+	case "*bs_client.QueryFundReq":
+		fallthrough
+	case "*bs_client.QueryFundRsp":
+		fallthrough
+	case "*bs_client.GetOnlineUserReq":
+		fallthrough
+	case "*bs_client.GetOnlineUserRsp":
+		fallthrough
+	case "*bs_client.KickUserReq":
+		fallthrough
+	case "*bs_client.KickUserRsp":
+		return setClientBase(input)
 	default:
 		fmt.Println("input为不识别的类型")
 		return false, nil
