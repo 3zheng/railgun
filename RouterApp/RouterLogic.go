@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"math/rand"
 	"time"
 
@@ -83,6 +84,8 @@ func (this *RouterLogic) Router_OnRegReq(req *bs_router.RegisterAppReq) {
 	_, ok2 := this.mMapAppId[appId]
 	if ok2 {
 		fmt.Println("相同类型相同app_id的app已经注册了，不允许重复注册。apptype=", appType, "typename=", bs_proto.GetAppTypeName(appType),
+			",appid=", appId, ",connid=", req.Base.ConnId)
+		log.Println("相同类型相同app_id的app已经注册了，不允许重复注册。apptype=", appType, "typename=", bs_proto.GetAppTypeName(appType),
 			",appid=", appId, ",connid=", req.Base.ConnId)
 		this.CloseSession(req.Base.ConnId)
 		return
