@@ -70,7 +70,9 @@ func (this *GateLogic) ProcessReq(req proto.Message, pDatabase *PoolAndAgent.CAD
 	case *bs_client.LoginRsp:
 		this.Client_OnLoginRsp(data)
 	default:
-		fmt.Println("不识别的报文，string=", data.String())
+		if data != nil {
+			fmt.Println("不识别的报文，string=", data.String())
+		}
 	}
 }
 
