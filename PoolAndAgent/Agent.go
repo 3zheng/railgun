@@ -42,7 +42,7 @@ func (*NetAgent) SendMsg(req *bs_tcp.TCPTransferMsg) {
 func CreateNetAgent(ipAdd string) *NetAgent {
 	for _, v := range netAgentList {
 		if v.IpAddress == ipAdd {
-			fmt.Println("已存在相同IP地址和端口")
+			fmt.Println("已存在相同IP地址和端口,返回空指针")
 			return nil
 		}
 	}
