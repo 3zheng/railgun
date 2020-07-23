@@ -21,6 +21,8 @@ type NetAgent struct {
 	IpAddress string
 }
 
+var netAgentList []NetAgent
+
 func (*NetAgent) SendMsg(req *bs_tcp.TCPTransferMsg) {
 	var connId uint64 = req.Base.ConnId
 	sess := ListenManager.GetSessionByConnId(connId)
@@ -38,8 +40,15 @@ func (*NetAgent) SendMsg(req *bs_tcp.TCPTransferMsg) {
 //创建一个NetAgent,ipAdd是个带端口的ip地址，如果是监听一个端口使用0.0.0.0:port
 //NetAgent是TcpManager的映射，在CreateNetAgent并不和TcpManager联系起来，而是在SingleMsgPool的InitAndRun来创建TcpManager的TCP端口监听
 func CreateNetAgent(ipAdd string) *NetAgent {
+	for _, v := range netAgentList {
+		if v.IpAddress == ipAdd {
+			fmt.Println("已存在相同IP地址和端口")
+			return nil
+		}
+	}
 	agent := new(NetAgent)
 	agent.IpAddress = ipAdd
+	netAgentList = append(netAgentList, agent)
 	return agent
 }
 
