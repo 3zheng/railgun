@@ -7,7 +7,7 @@ import (
 	bs_client "github.com/3zheng/railgun/protodefine/client"
 	bs_types "github.com/3zheng/railgun/protodefine/mytype"
 	bs_router "github.com/3zheng/railgun/protodefine/router"
-	proto "github.com/golang/protobuf/proto"
+	proto "google.golang.org/protobuf/proto"
 )
 
 type LoginMainLogic struct {
@@ -17,7 +17,7 @@ type LoginMainLogic struct {
 	mMyAppid      uint32
 }
 
-//实现PoolAndAgent.ILogicProcess的三个接口函数
+// 实现PoolAndAgent.ILogicProcess的三个接口函数
 func (this *LoginMainLogic) Init(myPool *PoolAndAgent.SingleMsgPool) bool {
 	this.mLogicPool = myPool
 	return true
@@ -58,7 +58,7 @@ func (this *LoginMainLogic) Client_OnLoginRsp(req *bs_client.LoginRsp) {
 	this.SendToOtherApp(req, req.Base)
 }
 
-//向客户端发送
+// 向客户端发送
 func (this *LoginMainLogic) SendToUserClient(req proto.Message, pBase *bs_types.BaseInfo, userId uint64, gateConnId uint64) {
 	//向客户端发送消息，要先转为bs_router.RouterTransferData,让router中转到gate
 	msg := Login_CreateRouterTransferDataByCommonMsg(req, pBase)
@@ -76,7 +76,7 @@ func (this *LoginMainLogic) SendToUserClient(req proto.Message, pBase *bs_types.
 	this.mLogicPool.SendMsgToServerAppByRouter(msg)
 }
 
-//向某个APP发送
+// 向某个APP发送
 func (this *LoginMainLogic) SendToOtherApp(req proto.Message, pBase *bs_types.BaseInfo) {
 	//向客户端发送消息，要先转为bs_router.RouterTransferData,让router中转到gate
 	msg := Login_CreateRouterTransferDataByCommonMsg(req, pBase)
@@ -91,7 +91,7 @@ func (this *LoginMainLogic) SendToOtherApp(req proto.Message, pBase *bs_types.Ba
 	this.mLogicPool.SendMsgToServerAppByRouter(msg)
 }
 
-//向DBPOOL发送（伪），这个发送实际上不走TCP/IP，是程序内部间的“发送”
+// 向DBPOOL发送（伪），这个发送实际上不走TCP/IP，是程序内部间的“发送”
 func (this *LoginMainLogic) PushToDBPool(req proto.Message) {
 	if this.mDBPool != nil {
 		this.mDBPool.PushMsg(req, 0) //往mDBPool的队列尾推入消息

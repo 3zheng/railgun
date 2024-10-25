@@ -10,13 +10,13 @@ import (
 
 	bs_proto "github.com/3zheng/railgun/protodefine"
 	bs_tcp "github.com/3zheng/railgun/protodefine/tcpnet"
-	proto "github.com/golang/protobuf/proto"
+	proto "google.golang.org/protobuf/proto"
 )
 
 var gSessionLock sync.Mutex //gSessionMap的临界区锁
 var gSessionMap map[uint64]*ConnectionSession
 
-//服务端的
+// 服务端的
 type ConnectionSession struct {
 	//	quitWriteCh  chan int                   //通知结束客户端write协程的管道
 	remoteAddr    string                      //对端地址包括ip和port
@@ -30,8 +30,8 @@ type ConnectionSession struct {
 	IsSendKickMsg int32                       //MsgPool是否处理了Kick报文或者说是否已经调用了CloseSession的标志位,MsgPool也会访问，所以大写
 }
 
-//应对粘包采用的数据格式是4个字节的int32类型的length变量作为包头，后续跟上长度为length的包实体
-//从客户端收消息
+// 应对粘包采用的数据格式是4个字节的int32类型的length变量作为包头，后续跟上长度为length的包实体
+// 从客户端收消息
 func (session *ConnectionSession) RecvPackege(logicChannel chan proto.Message) {
 	data := make([]byte, 1024) //1024字节为一个数据片
 	//(*session).cache.
@@ -73,7 +73,7 @@ func (session *ConnectionSession) RecvPackege(logicChannel chan proto.Message) {
 	session.wg.Done()
 }
 
-//向客户端发消息
+// 向客户端发消息
 func (session *ConnectionSession) SendPackege(logicChannel chan proto.Message) {
 	//等待从逻辑层下发的消息
 	quit := false
@@ -111,7 +111,7 @@ func (session *ConnectionSession) SendPackege(logicChannel chan proto.Message) {
 	session.wg.Done()
 }
 
-//CloseSession必须由逻辑层创建协程来调用，因为这里使用了session.wg.Wait()阻塞,而且必须先判断之前是否已经调用了CloseSession，不能调用两次
+// CloseSession必须由逻辑层创建协程来调用，因为这里使用了session.wg.Wait()阻塞,而且必须先判断之前是否已经调用了CloseSession，不能调用两次
 func (session *ConnectionSession) CloseSession(logicChannel chan proto.Message) {
 	ret := atomic.CompareAndSwapInt32(&(session.IsSendKickMsg), 0, 1)
 	if !ret {
@@ -139,7 +139,7 @@ func (session *ConnectionSession) CloseSession(logicChannel chan proto.Message) 
 	fmt.Println("gSessionMap已删除connId=", connId, "的session")
 }
 
-//ip_address是带端口的字符串 比如 127.0.0.1:8008, logicChannel是将网络层消息传递给逻辑层主线程的管道
+// ip_address是带端口的字符串 比如 127.0.0.1:8008, logicChannel是将网络层消息传递给逻辑层主线程的管道
 func CreateSever(ip_address string, logicChannel chan proto.Message) {
 	//listen, err := net.ListenTCP("tcp", &net.TCPAddr{net.ParseIP(ip), port, ""})
 	var tcpAddr *net.TCPAddr

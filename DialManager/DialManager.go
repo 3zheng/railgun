@@ -7,12 +7,13 @@ import (
 	"fmt"
 	"net"
 
-	serverManger "github.com/3zheng/railgun/TcpListenManager"
+	serverManger "	"
+
 	bs_tcp "github.com/3zheng/railgun/protodefine/tcpnet"
-	proto "github.com/golang/protobuf/proto"
+	proto "google.golang.org/protobuf/proto"
 )
 
-//作为客户端去连接
+// 作为客户端去连接
 type ConnectionSession struct {
 	//	quitWriteCh  chan int                   //通知结束客户端write协程的管道
 	remoteAddr string                      //对端地址包括ip和port
@@ -59,7 +60,7 @@ func (session *ConnectionSession) RecvPackege(logicChannel chan proto.Message) {
 
 }
 
-//向客户端发消息
+// 向客户端发消息
 func (session *ConnectionSession) SendPackege(logicChannel chan proto.Message) {
 	//等待从逻辑层下发的消息
 	quit := false

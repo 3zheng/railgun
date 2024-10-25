@@ -1,4 +1,4 @@
-//PoolAndAgent project MsgPool.go
+// PoolAndAgent project MsgPool.go
 package PoolAndAgent
 
 import (
@@ -11,7 +11,7 @@ import (
 	bs_types "github.com/3zheng/railgun/protodefine/mytype"
 	bs_router "github.com/3zheng/railgun/protodefine/router"
 	bs_tcp "github.com/3zheng/railgun/protodefine/tcpnet"
-	proto "github.com/golang/protobuf/proto"
+	proto "google.golang.org/protobuf/proto"
 )
 
 const CHANNEL_LENGTH = 100000 //消息管道的容量
@@ -36,7 +36,7 @@ type SingleMsgPool struct {
 	myAppId               uint32
 }
 
-//创建一个MsgPool
+// 创建一个MsgPool
 func CreateMsgPool(quit chan int, myAppType uint32, myAppId uint32) *SingleMsgPool {
 	pool := new(SingleMsgPool)
 	pool.IsInit = false
@@ -49,7 +49,7 @@ func CreateMsgPool(quit chan int, myAppType uint32, myAppId uint32) *SingleMsgPo
 	return pool
 }
 
-//结束程序运行
+// 结束程序运行
 func (this *SingleMsgPool) StopRun() {
 	if this.quit != nil {
 		this.quit <- 1
@@ -217,7 +217,7 @@ func (this *SingleMsgPool) AddLogicProcess(agent ILogicProcess) {
 	this.bindingLogicProcesses = append(this.bindingLogicProcesses, agent)
 }
 
-//延时nMs毫秒后推送到PoolToLogicChannel队列中
+// 延时nMs毫秒后推送到PoolToLogicChannel队列中
 func (this *SingleMsgPool) PushMsg(req proto.Message, nMs uint64) {
 	//因为在实际业务中需要延时发送的报文不多所以如果有延时发送另起一个协程
 	if nMs != 0 {

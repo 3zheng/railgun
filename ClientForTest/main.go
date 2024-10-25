@@ -9,7 +9,7 @@ import (
 	bs_gate "github.com/3zheng/railgun/protodefine/gate"
 	bs_types "github.com/3zheng/railgun/protodefine/mytype"
 	bs_tcp "github.com/3zheng/railgun/protodefine/tcpnet"
-	proto "github.com/golang/protobuf/proto"
+	proto "google.golang.org/protobuf/proto"
 )
 
 func main() {
@@ -65,7 +65,7 @@ func ChangeCommonMsgToTCPTransferMsg(common proto.Message) *bs_tcp.TCPTransferMs
 	return tcpMsg
 }
 
-//循环阻塞读取
+// 循环阻塞读取
 func ReceiveMsg(ch chan proto.Message) {
 	for {
 		select {

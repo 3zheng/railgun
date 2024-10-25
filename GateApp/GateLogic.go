@@ -12,7 +12,7 @@ import (
 	bs_types "github.com/3zheng/railgun/protodefine/mytype"
 	bs_router "github.com/3zheng/railgun/protodefine/router"
 	bs_tcp "github.com/3zheng/railgun/protodefine/tcpnet"
-	proto "github.com/golang/protobuf/proto"
+	proto "google.golang.org/protobuf/proto"
 )
 
 type GateConnection struct {
@@ -31,7 +31,7 @@ type GateUserInfo struct {
 	connId uint64
 }
 
-//*GateLogic继承于LogicProcess接口
+// *GateLogic继承于LogicProcess接口
 type GateLogic struct {
 	mPool          *PoolAndAgent.SingleMsgPool //自身绑定的SingleMsgPool
 	mListenAgent   *PoolAndAgent.NetAgent
@@ -41,7 +41,7 @@ type GateLogic struct {
 	mMapUser       map[uint64]GateUserInfo   //以userId为key的map
 }
 
-//实现PoolAndAgent.ILogicProcess的三个接口函数
+// 实现PoolAndAgent.ILogicProcess的三个接口函数
 func (this *GateLogic) Init(myPool *PoolAndAgent.SingleMsgPool) bool {
 	this.mPool = myPool
 	this.mMapConnection = make(map[uint64]GateConnection)
@@ -84,7 +84,7 @@ func (this *GateLogic) Private_OnInit(req *PrivateInitMsg) {
 	this.mMyAppid = req.myAppId
 }
 
-//新建了一个客户端session
+// 新建了一个客户端session
 func (this *GateLogic) Network_OnConnOK(req *bs_tcp.TCPSessionCome) {
 	fmt.Println("收到了TCPSessionCome报文")
 	if req.Base.ConnId > 0xefffffff {
@@ -111,7 +111,7 @@ func (this *GateLogic) Network_OnConnOK(req *bs_tcp.TCPSessionCome) {
 
 }
 
-//断开了一个客户端session
+// 断开了一个客户端session
 func (this *GateLogic) Network_OnConnClose(req *bs_tcp.TCPSessionClose) {
 	connId := req.Base.ConnId
 	fmt.Println("conn_id=", req.Base.ConnId, "断开连接")
@@ -130,7 +130,7 @@ func (this *GateLogic) Network_OnConnClose(req *bs_tcp.TCPSessionClose) {
 	delete(this.mMapConnection, connId)
 }
 
-//收到了客户端的心跳测试请求
+// 收到了客户端的心跳测试请求
 func (this *GateLogic) Gate_PulseReq(req *bs_gate.PulseReq) {
 	//发送回复
 	rsp := new(bs_gate.PulseRsp)
@@ -140,7 +140,7 @@ func (this *GateLogic) Gate_PulseReq(req *bs_gate.PulseReq) {
 	this.SendToClient(rsp, rsp.Base)
 }
 
-//收到了客户端传来的消息
+// 收到了客户端传来的消息
 func (this *GateLogic) Gate_GateTransferData(req *bs_gate.GateTransferData) {
 	connElem, ok := this.mMapConnection[req.Base.ConnId]
 	if !ok {
@@ -296,7 +296,7 @@ func (this *GateLogic) AppFrame_OnClientAuth(req proto.Message) {
 
 }
 
-//登录回复报文
+// 登录回复报文
 func (this *GateLogic) Client_OnLoginRsp(req *bs_client.LoginRsp) {
 	fmt.Println("收到了LoginRsp, string=", req.String(), "gate connId=", req.Base.GateConnId)
 	//收到了登录回复报文表示验证成功了
@@ -331,7 +331,7 @@ func (this *GateLogic) Client_OnLoginRsp(req *bs_client.LoginRsp) {
 	this.SendToClient(req, req.Base)
 }
 
-//向客户端发送报文
+// 向客户端发送报文
 func (this *GateLogic) SendToClient(req proto.Message, pBase *bs_types.BaseInfo) {
 	//先把其他报文转成bs_gate.TransferData然后再转成bs_tcp.TCPTransferMsg
 	var gateTrans *bs_gate.GateTransferData = nil
@@ -348,7 +348,7 @@ func (this *GateLogic) SendToClient(req proto.Message, pBase *bs_types.BaseInfo)
 
 }
 
-//主动断开一个session连接
+// 主动断开一个session连接
 func (this *GateLogic) CloseSession(connId uint64) {
 	kick := new(bs_tcp.TCPSessionKick)
 	bs_proto.SetBaseKindAndSubId(kick)

@@ -14,14 +14,14 @@ import (
 	bs_tcp "github.com/3zheng/railgun/protodefine/tcpnet"
 
 	_ "github.com/go-sql-driver/mysql"
-	proto "github.com/golang/protobuf/proto"
+	proto "google.golang.org/protobuf/proto"
 )
 
 type NetAgent struct {
 	IpAddress string
 }
 
-var netAgentList []NetAgent
+var netAgentList []*NetAgent
 
 func (*NetAgent) SendMsg(req *bs_tcp.TCPTransferMsg) {
 	var connId uint64 = req.Base.ConnId
@@ -37,8 +37,8 @@ func (*NetAgent) SendMsg(req *bs_tcp.TCPTransferMsg) {
 	}
 }
 
-//创建一个NetAgent,ipAdd是个带端口的ip地址，如果是监听一个端口使用0.0.0.0:port
-//NetAgent是TcpManager的映射，在CreateNetAgent并不和TcpManager联系起来，而是在SingleMsgPool的InitAndRun来创建TcpManager的TCP端口监听
+// 创建一个NetAgent,ipAdd是个带端口的ip地址，如果是监听一个端口使用0.0.0.0:port
+// NetAgent是TcpManager的映射，在CreateNetAgent并不和TcpManager联系起来，而是在SingleMsgPool的InitAndRun来创建TcpManager的TCP端口监听
 func CreateNetAgent(ipAdd string) *NetAgent {
 	for _, v := range netAgentList {
 		if v.IpAddress == ipAdd {
@@ -63,7 +63,7 @@ func CreateRouterAgent(ipAdd string) *RouterAgent {
 	return agent
 }
 
-//启动运行RouterAgent
+// 启动运行RouterAgent
 func (this *RouterAgent) RunRouterAgent(RouterToLogicChannel chan proto.Message, myAppId uint32, myAppType uint32) {
 	fmt.Println("RunRouterAgent() myAppId=", myAppId, "myAppType=", myAppType)
 	isClosed := false
@@ -143,7 +143,7 @@ type DBWriteInfo struct {
 	AffectedRows int64 //写操作影响的行数
 }
 
-//数据库的映射
+// 数据库的映射
 type CADODatabase struct {
 	DBSourceString string      //mysql的数据库连接串	格式"root:123456@tcp(localhost:3306)/sns?charset=utf8"
 	Err            error       //错误
@@ -169,7 +169,7 @@ func (this *CADODatabase) InitDB() {
 	this.TheDB = db
 }
 
-//从数据库里读数据
+// 从数据库里读数据
 func (this *CADODatabase) ReadFromDB(sqlExpress string) {
 	//在读数据前先clear DBReadInfo
 	this.ReadInfo.Clear()
@@ -232,7 +232,7 @@ func (this *CADODatabase) ReadFromDB(sqlExpress string) {
 	this.ReadInfo.RowNum = len(this.ReadInfo.ArrValues)
 }
 
-//向数据库写数据
+// 向数据库写数据
 func (this *CADODatabase) WriteToDB(sqlExpress string) {
 	result, err := this.TheDB.Exec(sqlExpress)
 	if err != nil {
@@ -244,8 +244,8 @@ func (this *CADODatabase) WriteToDB(sqlExpress string) {
 	this.WriteInfo.AffectedRows, _ = result.RowsAffected()
 }
 
-//在ReadFromDB从结果集里获取数据,结果放入value中，所以value要传地址。rowId从0开始为第一行
-//成功返回true，失败返回false
+// 在ReadFromDB从结果集里获取数据,结果放入value中，所以value要传地址。rowId从0开始为第一行
+// 成功返回true，失败返回false
 func (this *CADODatabase) GetValueByRowIdAndColName(rowId int, colName string, value interface{}) bool {
 	//先根据列名获得列的数组下标
 	colId, ok := this.ReadInfo.TheColumns[colName]

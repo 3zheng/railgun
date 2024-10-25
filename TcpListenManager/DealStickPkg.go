@@ -5,9 +5,9 @@ import (
 	"encoding/binary"
 )
 
-//接收消息要处理粘包的解包函数
-//pkg是ConnectionSession的cache，如果根据头4个字节获取的报文长度大于当前pkg的len-4的长度，那么说明还有后续消息没有read，还需要继续等待。这时返回nil []byte
-//反之如果长度小于等于当前pkg的len-4的长度说明，说明已经获取了一个完整的消息，就把头四个字节去掉，然后把实际报文return出去
+// 接收消息要处理粘包的解包函数或者TCP流处理
+// pkg是ConnectionSession的cache，如果根据头4个字节获取的报文长度大于当前pkg的len-4的长度，那么说明还有后续消息没有read，还需要继续等待。这时返回nil []byte
+// 反之如果长度小于等于当前pkg的len-4的长度说明，说明已经获取了一个完整的消息，就把头四个字节去掉，然后把实际报文return出去
 func DecodePackage(pkg *bytes.Buffer, recvData []byte) []byte {
 	//先把接收的消息写入pkg
 	pkg.Write(recvData)
@@ -36,7 +36,7 @@ func DecodePackage(pkg *bytes.Buffer, recvData []byte) []byte {
 	return nil
 }
 
-//发消息时调用的组包函数
+// 发消息时调用的组包函数
 func EncodePackage(pkg *bytes.Buffer, data []byte) error {
 	var length int32 = int32(len(data))
 	// 先把表示消息长度的4个字节int32写入消息头,而且TCP流得是BigEndian大端字节序

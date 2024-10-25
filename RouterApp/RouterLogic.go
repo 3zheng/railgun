@@ -12,7 +12,7 @@ import (
 	bs_router "github.com/3zheng/railgun/protodefine/router"
 	bs_tcp "github.com/3zheng/railgun/protodefine/tcpnet"
 
-	proto "github.com/golang/protobuf/proto"
+	proto "google.golang.org/protobuf/proto"
 )
 
 type RouterConnection struct {
@@ -240,13 +240,13 @@ func (this *RouterLogic) Network_OnConnClose(req *bs_tcp.TCPSessionClose) {
 	delete(this.mMapConnection, connId)
 }
 
-//向客户端发送报文
+// 向客户端发送报文
 func (this *RouterLogic) SendToOtherApp(req proto.Message, pBase *bs_types.BaseInfo) {
 	msg := Router_CreateTCPTransferMsgByCommonMsg(req, pBase)
 	this.mPool.SendMsgToClientByNetAgent(msg)
 }
 
-//主动断开一个session连接
+// 主动断开一个session连接
 func (this *RouterLogic) CloseSession(connId uint64) {
 	kick := new(bs_tcp.TCPSessionKick)
 	bs_proto.SetBaseKindAndSubId(kick)
@@ -255,7 +255,7 @@ func (this *RouterLogic) CloseSession(connId uint64) {
 	this.mPool.SendMsgToClientByNetAgent(kick)
 }
 
-//向某种apptype下的任意一个appid发送报文
+// 向某种apptype下的任意一个appid发送报文
 func (this *RouterLogic) DeliverToAnyOneByType(req *bs_router.RouterTransferData, destAppType uint32) bool {
 	bs_proto.OutputMyLog("发送往任意的", bs_proto.GetAppTypeName(destAppType))
 	if req.DataDirection == bs_router.RouterTransferData_App2Client {
@@ -286,7 +286,7 @@ func (this *RouterLogic) DeliverToAnyOneByType(req *bs_router.RouterTransferData
 	return true
 }
 
-//向某种apptype下的所有appid发送报文
+// 向某种apptype下的所有appid发送报文
 func (this *RouterLogic) DeliverToAllByType(req *bs_router.RouterTransferData, destAppType uint32) bool {
 	if req.DataDirection == bs_router.RouterTransferData_App2Client && destAppType == uint32(bs_types.EnumAppType_Gate) {
 		//如果是服务端发往客户端的报文。接受发往所有gate，因为有可能是广播类型消息，但是要慎用，所以打印出来，以免滥用
@@ -321,7 +321,7 @@ func (this *RouterLogic) DeliverToAllByType(req *bs_router.RouterTransferData, d
 	return true
 }
 
-//向指定appId发送报文
+// 向指定appId发送报文
 func (this *RouterLogic) DeliverToAllByPointID(req *bs_router.RouterTransferData, destAppType uint32, destAppId uint32) bool {
 	if req.DataDirection == bs_router.RouterTransferData_App2Client && destAppType != uint32(bs_types.EnumAppType_Gate) {
 		//如果是服务端发往客户端的报文。却不是发往gate，那就是填错了

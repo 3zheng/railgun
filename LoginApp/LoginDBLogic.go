@@ -6,7 +6,7 @@ import (
 	"github.com/3zheng/railgun/PoolAndAgent"
 	bs_proto "github.com/3zheng/railgun/protodefine"
 	bs_client "github.com/3zheng/railgun/protodefine/client"
-	proto "github.com/golang/protobuf/proto"
+	proto "google.golang.org/protobuf/proto"
 )
 
 type LoginDBLogic struct {
@@ -16,7 +16,7 @@ type LoginDBLogic struct {
 	mMyAppid      uint32
 }
 
-//实现PoolAndAgent.ILogicProcess的三个接口函数
+// 实现PoolAndAgent.ILogicProcess的三个接口函数
 func (this *LoginDBLogic) Init(myPool *PoolAndAgent.SingleMsgPool) bool {
 	this.mDBPool = myPool
 	return true
@@ -70,7 +70,7 @@ func (this *LoginDBLogic) Client_OnDBLoginReq(req *bs_client.LoginReq, pDatabase
 	this.PushToMainPool(rsp)
 }
 
-//向DBPOOL发送（伪），这个发送实际上不走TCP/IP，是程序内部间的“发送”
+// 向DBPOOL发送（伪），这个发送实际上不走TCP/IP，是程序内部间的“发送”
 func (this *LoginDBLogic) PushToMainPool(req proto.Message) {
 	if this.mLogicPool != nil {
 		this.mLogicPool.PushMsg(req, 0) //往mDBPool的队列尾推入消息
