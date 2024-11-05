@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/3zheng/railgun/PoolAndAgent"
+	"github.com/3zheng/railcommon"
 	proto "google.golang.org/protobuf/proto"
 )
 
