@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	protodf "github.com/3zheng/railcommon/protodf"
+	protodf "github.com/3zheng/railproto"
 	proto "google.golang.org/protobuf/proto"
 )
 
@@ -18,7 +18,7 @@ func Router_CreateCommonMsgByTCPTransferMsg(req proto.Message) proto.Message {
 		switch data.DataKindId { //判断大类
 		case uint32(protodf.CMDKindId_IDKindRouter):
 			switch data.DataSubId { //判断小类
-			case uint32(protodf.CMDID_Router_IDTransferData):
+			case uint32(protodf.CMDID_Router_IDTransferDataRt):
 				msg := new(protodf.RouterTransferData)
 				err := proto.Unmarshal(data.Data, msg)
 				protodf.SetBaseKindAndSubId(msg)

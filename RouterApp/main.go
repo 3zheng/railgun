@@ -4,8 +4,8 @@ package main
 import (
 	"fmt"
 
-	"github.com/3zheng/railgun/PoolAndAgent"
-	protodf "github.com/3zheng/railgun/protodf/mytype"
+	"github.com/3zheng/railcommon"
+	protodf "github.com/3zheng/railproto"
 )
 
 func CreateRouterLogicInstance() *RouterLogic {
@@ -15,8 +15,8 @@ func CreateRouterLogicInstance() *RouterLogic {
 func main() {
 	quit := make(chan int)
 	var myAppId uint32 = 50
-	pNetAgent := PoolAndAgent.CreateNetAgent("0.0.0.0:2001") //监听2001端口
-	pLogicPool := PoolAndAgent.CreateMsgPool(quit, uint32(protodf.EnumAppType_Router), myAppId)
+	pNetAgent := railcommon.CreateNetAgent("0.0.0.0:2001") //监听2001端口
+	pLogicPool := railcommon.CreateMsgPool(quit, uint32(protodf.EnumAppType_Router), myAppId)
 	pRouterLogic := CreateRouterLogicInstance()
 	//将他们都与Pool绑定起来
 	pLogicPool.AddLogicProcess(pRouterLogic)

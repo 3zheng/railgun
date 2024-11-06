@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/3zheng/railcommon"
 	proto "google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
 /*这个源文件的作用：
@@ -16,14 +17,18 @@ import (
 
 // 初始化报文
 type PrivateInitMsg struct {
-	pNetAgent    *PoolAndAgent.NetAgent
-	pRouterAgent *PoolAndAgent.RouterAgent
-	pMainPool    *PoolAndAgent.SingleMsgPool
-	pDBPool      *PoolAndAgent.SingleMsgPool
+	pNetAgent    *railcommon.NetAgent
+	pRouterAgent *railcommon.RouterAgent
+	pMainPool    *railcommon.SingleMsgPool
+	pDBPool      *railcommon.SingleMsgPool
 	myAppId      uint32
 }
 
 // 均为空
+func (*PrivateInitMsg) ProtoReflect() protoreflect.Message {
+	return nil
+}
+
 func (*PrivateInitMsg) Reset() {
 
 }

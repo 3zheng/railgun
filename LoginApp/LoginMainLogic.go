@@ -3,25 +3,25 @@ package main
 import (
 	"fmt"
 
-	"github.com/3zheng/railcommon/PoolAndAgent"
-	protodf "github.com/3zheng/railcommon/protodf"
+	"github.com/3zheng/railcommon"
+	protodf "github.com/3zheng/railproto"
 	proto "google.golang.org/protobuf/proto"
 )
 
 type LoginMainLogic struct {
-	mLogicPool    *PoolAndAgent.SingleMsgPool //自身绑定的SingleMsgPool
-	mDBPool       *PoolAndAgent.SingleMsgPool //数据库的pool
-	mRouterAgents *PoolAndAgent.RouterAgent   //暂时一个router agent，以后可能会有多个
+	mLogicPool    *railcommon.SingleMsgPool //自身绑定的SingleMsgPool
+	mDBPool       *railcommon.SingleMsgPool //数据库的pool
+	mRouterAgents *railcommon.RouterAgent   //暂时一个router agent，以后可能会有多个
 	mMyAppid      uint32
 }
 
-// 实现PoolAndAgent.ILogicProcess的三个接口函数
-func (this *LoginMainLogic) Init(myPool *PoolAndAgent.SingleMsgPool) bool {
+// 实现railcommon.ILogicProcess的三个接口函数
+func (this *LoginMainLogic) Init(myPool *railcommon.SingleMsgPool) bool {
 	this.mLogicPool = myPool
 	return true
 }
 
-func (this *LoginMainLogic) ProcessReq(req proto.Message, pDatabase *PoolAndAgent.CADODatabase) {
+func (this *LoginMainLogic) ProcessReq(req proto.Message, pDatabase *railcommon.CADODatabase) {
 	msg := Login_CreateCommonMsgByRouterTransferData(req)
 	switch data := msg.(type) {
 	case *PrivateInitMsg:

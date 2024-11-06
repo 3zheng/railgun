@@ -3,26 +3,25 @@ package main
 import (
 	"fmt"
 
-	"github.com/3zheng/railgun/PoolAndAgent"
-	protodf "github.com/3zheng/railgun/protodf"
-	protodf "github.com/3zheng/railgun/protodf/client"
+	"github.com/3zheng/railcommon"
+	protodf "github.com/3zheng/railproto"
 	proto "google.golang.org/protobuf/proto"
 )
 
 type LoginDBLogic struct {
-	mLogicPool    *PoolAndAgent.SingleMsgPool //主逻辑线程的Pool
-	mDBPool       *PoolAndAgent.SingleMsgPool //自身绑定的SingleMsgPool
-	mRouterAgents *PoolAndAgent.RouterAgent   //暂时一个router agent，以后可能会有多个
+	mLogicPool    *railcommon.SingleMsgPool //主逻辑线程的Pool
+	mDBPool       *railcommon.SingleMsgPool //自身绑定的SingleMsgPool
+	mRouterAgents *railcommon.RouterAgent   //暂时一个router agent，以后可能会有多个
 	mMyAppid      uint32
 }
 
-// 实现PoolAndAgent.ILogicProcess的三个接口函数
-func (this *LoginDBLogic) Init(myPool *PoolAndAgent.SingleMsgPool) bool {
+// 实现railcommon.ILogicProcess的三个接口函数
+func (this *LoginDBLogic) Init(myPool *railcommon.SingleMsgPool) bool {
 	this.mDBPool = myPool
 	return true
 }
 
-func (this *LoginDBLogic) ProcessReq(req proto.Message, pDatabase *PoolAndAgent.CADODatabase) {
+func (this *LoginDBLogic) ProcessReq(req proto.Message, pDatabase *railcommon.CADODatabase) {
 	//因为DBPool的报文来源都是主逻辑Pool,并没有直接绑定routerAgent，所以收到的全部都是普通报文。不需要调用Login_CreateCommonMsgByRouterTransferData
 	switch data := req.(type) {
 	case *PrivateInitMsg:
@@ -43,7 +42,7 @@ func (this *LoginDBLogic) Private_OnInit(req *PrivateInitMsg) {
 	this.mLogicPool = req.pMainPool
 }
 
-func (this *LoginDBLogic) Client_OnDBLoginReq(req *protodf.LoginReq, pDatabase *PoolAndAgent.CADODatabase) {
+func (this *LoginDBLogic) Client_OnDBLoginReq(req *protodf.LoginReq, pDatabase *railcommon.CADODatabase) {
 	sqlExpress := fmt.Sprintf("select * from user_base where login_account = '%s' and passwd ='%s'", req.LoginAccount, req.LoginPassword)
 	pDatabase.ReadFromDB(sqlExpress)
 

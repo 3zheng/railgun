@@ -4,6 +4,7 @@ import (
 	"github.com/3zheng/railcommon"
 
 	proto "google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
 /*这个源文件的作用：
@@ -20,6 +21,10 @@ type PrivateInitMsg struct {
 	pNetAgent    *railcommon.NetAgent
 	pRouterAgent *railcommon.RouterAgent
 	myAppId      uint32
+}
+
+func (*PrivateInitMsg) ProtoReflect() protoreflect.Message {
+	return nil
 }
 
 // 均为空

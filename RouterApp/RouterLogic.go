@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/3zheng/railcommon"
-	protodf "github.com/3zheng/railcommon/protodf"
+	protodf "github.com/3zheng/railproto"
 
 	proto "google.golang.org/protobuf/proto"
 )
@@ -22,8 +22,8 @@ type RouterConnection struct {
 }
 
 type RouterLogic struct {
-	mPool        *PoolAndAgent.SingleMsgPool //自身绑定的SingleMsgPool
-	mListenAgent *PoolAndAgent.NetAgent
+	mPool        *railcommon.SingleMsgPool //自身绑定的SingleMsgPool
+	mListenAgent *railcommon.NetAgent
 	mMyAppid     uint32
 	//有分为app id和app type两个map是因为:有时候发送消息并不需要指定appid，只需要发往实现这个功能的apptype就行了
 	//又因为注册app和断开app都是低频事件，而报文发送是高频事件，所以mMapAppType的value使用的是slice而不是map[uint32]uint32
@@ -33,7 +33,7 @@ type RouterLogic struct {
 	mRandNum       *rand.Rand                  //随机数，在send anyone app的时候用到
 }
 
-func (this *RouterLogic) Init(myPool *PoolAndAgent.SingleMsgPool) bool {
+func (this *RouterLogic) Init(myPool *railcommon.SingleMsgPool) bool {
 	this.mPool = myPool
 	//创建以UnixNano为随机种子的随机数变量
 	s2 := rand.NewSource(time.Now().UnixNano())
@@ -44,7 +44,7 @@ func (this *RouterLogic) Init(myPool *PoolAndAgent.SingleMsgPool) bool {
 	return true
 }
 
-func (this *RouterLogic) ProcessReq(req proto.Message, pDatabase *PoolAndAgent.CADODatabase) {
+func (this *RouterLogic) ProcessReq(req proto.Message, pDatabase *railcommon.CADODatabase) {
 	msg := Router_CreateCommonMsgByTCPTransferMsg(req)
 	switch data := msg.(type) {
 	case *PrivateInitMsg:

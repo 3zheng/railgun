@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	protodf "github.com/3zheng/railcommon/protodf"
+	protodf "github.com/3zheng/railproto"
 	proto "google.golang.org/protobuf/proto"
 )
 

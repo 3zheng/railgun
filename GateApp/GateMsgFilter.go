@@ -56,7 +56,7 @@ func Gate_CreateCommonMsgByTCPTransferMsg(req proto.Message) proto.Message {
 			}
 		case uint32(protodf.CMDKindId_IDKindRouter):
 			switch data.DataSubId { //判断小类
-			case uint32(protodf.CMDID_Router_IDTransferData):
+			case uint32(protodf.CMDID_Router_IDTransferDataRt):
 				msg := new(protodf.RouterTransferData)
 				err := proto.Unmarshal(data.Data, msg)
 				protodf.SetBaseKindAndSubId(msg)

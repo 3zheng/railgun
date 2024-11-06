@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"reflect"
 	"time"
 
 	"github.com/3zheng/railcommon"
@@ -36,7 +37,7 @@ type GateLogic struct {
 	mMapUser       map[uint64]GateUserInfo   //以userId为key的map
 }
 
-// 实现PoolAndAgent.ILogicProcess的三个接口函数
+// 实现railcommon.ILogicProcess的三个接口函数
 func (this *GateLogic) Init(myPool *railcommon.SingleMsgPool) bool {
 	this.mPool = myPool
 	this.mMapConnection = make(map[uint64]GateConnection)
@@ -66,7 +67,7 @@ func (this *GateLogic) ProcessReq(req proto.Message, pDatabase *railcommon.CADOD
 		this.Client_OnLoginRsp(data)
 	default:
 		if data != nil {
-			fmt.Println("不识别的报文，string=", data.String())
+			fmt.Println("不识别的报文，string=", reflect.TypeOf(data).String())
 		}
 	}
 }
