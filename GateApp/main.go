@@ -4,8 +4,8 @@ package main
 import (
 	"fmt"
 
-	"github.com/3zheng/railgun/PoolAndAgent"
-	bs_types "github.com/3zheng/railgun/protodefine/mytype"
+	"github.com/3zheng/railcommon"
+	protodf "github.com/3zheng/railproto"
 )
 
 func CreateGateLogicInstance() *GateLogic {
@@ -16,9 +16,9 @@ func main() {
 	//先创建需要的变量
 	quit := make(chan int)
 	var myAppId uint32 = 101
-	pNetAgent := PoolAndAgent.CreateNetAgent("0.0.0.0:4101") //监听4101端口
-	pLogicPool := PoolAndAgent.CreateMsgPool(quit, uint32(bs_types.EnumAppType_Gate), myAppId)
-	pRouterAgent := PoolAndAgent.CreateRouterAgent("127.0.0.1:2001") //连接127.0.0.1:2001地址
+	pNetAgent := railcommon.CreateNetAgent("0.0.0.0:4101") //监听4101端口
+	pLogicPool := railcommon.CreateMsgPool(quit, uint32(protodf.EnumAppType_Gate), myAppId)
+	pRouterAgent := railcommon.CreateRouterAgent("127.0.0.1:2001") //连接127.0.0.1:2001地址
 	pGateLogic := CreateGateLogicInstance()
 	//将他们都与Pool绑定起来
 	pLogicPool.AddLogicProcess(pGateLogic)

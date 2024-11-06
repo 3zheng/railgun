@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/3zheng/railgun/PoolAndAgent"
-	bs_types "github.com/3zheng/railgun/protodefine/mytype"
+	protodf "github.com/3zheng/railgun/protodf/mytype"
 )
 
 func CreateRouterLogicInstance() *RouterLogic {
@@ -16,7 +16,7 @@ func main() {
 	quit := make(chan int)
 	var myAppId uint32 = 50
 	pNetAgent := PoolAndAgent.CreateNetAgent("0.0.0.0:2001") //监听2001端口
-	pLogicPool := PoolAndAgent.CreateMsgPool(quit, uint32(bs_types.EnumAppType_Router), myAppId)
+	pLogicPool := PoolAndAgent.CreateMsgPool(quit, uint32(protodf.EnumAppType_Router), myAppId)
 	pRouterLogic := CreateRouterLogicInstance()
 	//将他们都与Pool绑定起来
 	pLogicPool.AddLogicProcess(pRouterLogic)

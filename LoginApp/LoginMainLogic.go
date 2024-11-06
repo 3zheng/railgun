@@ -3,10 +3,8 @@ package main
 import (
 	"fmt"
 
-	"github.com/3zheng/railgun/PoolAndAgent"
-	bs_client "github.com/3zheng/railgun/protodefine/client"
-	bs_types "github.com/3zheng/railgun/protodefine/mytype"
-	bs_router "github.com/3zheng/railgun/protodefine/router"
+	"github.com/3zheng/railcommon/PoolAndAgent"
+	protodf "github.com/3zheng/railcommon/protodf"
 	proto "google.golang.org/protobuf/proto"
 )
 
@@ -28,9 +26,9 @@ func (this *LoginMainLogic) ProcessReq(req proto.Message, pDatabase *PoolAndAgen
 	switch data := msg.(type) {
 	case *PrivateInitMsg:
 		this.Private_OnInit(data)
-	case *bs_client.LoginReq:
+	case *protodf.LoginReq:
 		this.Client_OnLoginReq(data)
-	case *bs_client.LoginRsp:
+	case *protodf.LoginRsp:
 		this.Client_OnLoginRsp(data)
 	default:
 		return
@@ -46,27 +44,27 @@ func (this *LoginMainLogic) Private_OnInit(req *PrivateInitMsg) {
 	this.mDBPool = req.pDBPool
 }
 
-func (this *LoginMainLogic) Client_OnLoginReq(req *bs_client.LoginReq) {
+func (this *LoginMainLogic) Client_OnLoginReq(req *protodf.LoginReq) {
 	fmt.Println("收到了登录验证请求")
 	//登录验证报文直接丢给DBPool
 	this.PushToDBPool(req)
 }
 
-func (this *LoginMainLogic) Client_OnLoginRsp(req *bs_client.LoginRsp) {
+func (this *LoginMainLogic) Client_OnLoginRsp(req *protodf.LoginRsp) {
 	fmt.Println("收到了登录验证回复")
 	//直接把回复发往相应gate
 	this.SendToOtherApp(req, req.Base)
 }
 
 // 向客户端发送
-func (this *LoginMainLogic) SendToUserClient(req proto.Message, pBase *bs_types.BaseInfo, userId uint64, gateConnId uint64) {
-	//向客户端发送消息，要先转为bs_router.RouterTransferData,让router中转到gate
+func (this *LoginMainLogic) SendToUserClient(req proto.Message, pBase *protodf.BaseInfo, userId uint64, gateConnId uint64) {
+	//向客户端发送消息，要先转为protodf.RouterTransferData,让router中转到gate
 	msg := Login_CreateRouterTransferDataByCommonMsg(req, pBase)
 	switch msg := msg.(type) {
-	case *bs_router.RouterTransferData:
+	case *protodf.RouterTransferData:
 		msg.DestAppid = pBase.AttAppid
-		msg.DestApptype = uint32(bs_types.EnumAppType_Gate)
-		msg.DataDirection = bs_router.RouterTransferData_App2Client //发往用户客户端
+		msg.DestApptype = uint32(protodf.EnumAppType_Gate)
+		msg.DataDirection = protodf.RouterTransferData_App2Client //发往用户客户端
 		msg.ClientRemoteAddress = pBase.RemoteAdd
 		msg.AttGateid = pBase.AttAppid
 		msg.AttUserid = userId
@@ -77,14 +75,14 @@ func (this *LoginMainLogic) SendToUserClient(req proto.Message, pBase *bs_types.
 }
 
 // 向某个APP发送
-func (this *LoginMainLogic) SendToOtherApp(req proto.Message, pBase *bs_types.BaseInfo) {
-	//向客户端发送消息，要先转为bs_router.RouterTransferData,让router中转到gate
+func (this *LoginMainLogic) SendToOtherApp(req proto.Message, pBase *protodf.BaseInfo) {
+	//向客户端发送消息，要先转为protodf.RouterTransferData,让router中转到gate
 	msg := Login_CreateRouterTransferDataByCommonMsg(req, pBase)
 	switch msg := msg.(type) {
-	case *bs_router.RouterTransferData:
+	case *protodf.RouterTransferData:
 		msg.DestAppid = pBase.AttAppid
 		msg.DestApptype = pBase.AttApptype
-		msg.DataDirection = bs_router.RouterTransferData_App2App //发往其他app
+		msg.DataDirection = protodf.RouterTransferData_App2App //发往其他app
 		fmt.Println("RouterTransferData的DestAppid=", msg.DestAppid, ",DestApptype=", msg.DestApptype, "msg.DataDirection=", msg.DataDirection)
 	}
 	//这里只有SendMsgToServerAppByRouter，因为并没有绑定netagent

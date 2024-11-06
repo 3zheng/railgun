@@ -4,25 +4,22 @@ package main
 import (
 	"fmt"
 
-	"github.com/3zheng/railgun/DialManager"
-	bs_client "github.com/3zheng/railgun/protodefine/client"
-	bs_gate "github.com/3zheng/railgun/protodefine/gate"
-	bs_types "github.com/3zheng/railgun/protodefine/mytype"
-	bs_tcp "github.com/3zheng/railgun/protodefine/tcpnet"
+	"github.com/3zheng/railcommon"
+	protodf "github.com/3zheng/railproto"
 	proto "google.golang.org/protobuf/proto"
 )
 
 func main() {
 	//创建连接GATE的客户端
 	ch := make(chan proto.Message, 1000)
-	session := DialManager.CreateClient("127.0.0.1:4101", ch)
+	session := railcommon.CreateClient("127.0.0.1:4101", ch)
 	if session == nil {
 		fmt.Println("连接gate失败")
 		return
 	}
 	go ReceiveMsg(ch)
 	//发送登录请求
-	loginReq := new(bs_client.LoginReq)
+	loginReq := new(protodf.LoginReq)
 	loginReq.LoginAccount = "yourname"
 	loginReq.LoginPassword = "E10ADC3949BA59ABBE56E057F20F883E" //123456的MD5加密
 	tcpMsg := ChangeCommonMsgToTCPTransferMsg(loginReq)
@@ -37,20 +34,20 @@ func main() {
 	}
 }
 
-func ChangeCommonMsgToTCPTransferMsg(common proto.Message) *bs_tcp.TCPTransferMsg {
-	tcpMsg := new(bs_tcp.TCPTransferMsg)
-	gateMsg := new(bs_gate.TransferData)
+func ChangeCommonMsgToTCPTransferMsg(common proto.Message) *protodf.TCPTransferMsg {
+	tcpMsg := new(protodf.TCPTransferMsg)
+	gateMsg := new(protodf.GateTransferData)
 	switch data := common.(type) {
-	case *bs_client.LoginReq:
+	case *protodf.LoginReq:
 		buff, err := proto.Marshal(data)
 		if err != nil {
 			return nil
 		}
 		gateMsg.Data = buff
-		gateMsg.DataCmdKind = uint32(bs_types.CMDKindId_IDKindClient)
-		gateMsg.DataCmdSubid = uint32(bs_client.CMDID_Client_IDLoginReq)
-		gateMsg.AttApptype = uint32(bs_types.EnumAppType_Login)   //目标server app为登录app
-		gateMsg.AttAppid = uint32(bs_types.EnumAppId_Send2AnyOne) //随意一个登录app就行了，不需要知道其APPID
+		gateMsg.DataCmdKind = uint32(protodf.CMDKindId_IDKindClient)
+		gateMsg.DataCmdSubid = uint32(protodf.CMDID_Client_IDLoginReq)
+		gateMsg.AttApptype = uint32(protodf.EnumAppType_Login)   //目标server app为登录app
+		gateMsg.AttAppid = uint32(protodf.EnumAppId_Send2AnyOne) //随意一个登录app就行了，不需要知道其APPID
 	default:
 		fmt.Println("不识别的报文")
 		return nil
@@ -60,8 +57,8 @@ func ChangeCommonMsgToTCPTransferMsg(common proto.Message) *bs_tcp.TCPTransferMs
 		return nil
 	}
 	tcpMsg.Data = tcpBuff
-	tcpMsg.DataKindId = uint32(bs_types.CMDKindId_IDKindGate)
-	tcpMsg.DataSubId = uint32(bs_gate.CMDID_Gate_IDTransferData)
+	tcpMsg.DataKindId = uint32(protodf.CMDKindId_IDKindGate)
+	tcpMsg.DataSubId = uint32(protodf.CMDID_Gate_IDTransferData)
 	return tcpMsg
 }
 
@@ -74,12 +71,12 @@ func ReceiveMsg(ch chan proto.Message) {
 				return //跳出函数
 			}
 			switch data := v.(type) {
-			case *bs_tcp.TCPTransferMsg:
+			case *protodf.TCPTransferMsg:
 				fmt.Println("收到了gate的回复报文")
-				//处理bs_gate.TransferData报文
-				if data.DataKindId == uint32(bs_types.CMDKindId_IDKindGate) && data.DataSubId == uint32(bs_gate.CMDID_Gate_IDTransferData) {
-					fmt.Println("收到了bs_gate.TransferData报文")
-					gateMsg := new(bs_gate.TransferData)
+				//处理protodf.GateTransferData
+				if data.DataKindId == uint32(protodf.CMDKindId_IDKindGate) && data.DataSubId == uint32(protodf.CMDID_Gate_IDTransferData) {
+					fmt.Println("收到了protodf.GateTransferData")
+					gateMsg := new(protodf.GateTransferData)
 					err := proto.Unmarshal(data.Data, gateMsg)
 					if err != nil {
 						fmt.Println("proto反序列化失败")
@@ -87,10 +84,10 @@ func ReceiveMsg(ch chan proto.Message) {
 					}
 					fmt.Println("attAppType=", gateMsg.AttApptype, "attAppID=", gateMsg.AttAppid)
 					fmt.Println("gateMsg", gateMsg)
-					if gateMsg.DataCmdKind == uint32(bs_types.CMDKindId_IDKindClient) && gateMsg.DataCmdSubid == uint32(bs_client.CMDID_Client_IDLoginRsp) {
+					if gateMsg.DataCmdKind == uint32(protodf.CMDKindId_IDKindClient) && gateMsg.DataCmdSubid == uint32(protodf.CMDID_Client_IDLoginRsp) {
 						//登录回复
-						fmt.Println("收到了bs_client.LoginRsp报文")
-						loginRsp := new(bs_client.LoginRsp)
+						fmt.Println("收到了protodf.LoginRsp报文")
+						loginRsp := new(protodf.LoginRsp)
 						err := proto.Unmarshal(gateMsg.Data, loginRsp)
 						if err != nil {
 							fmt.Println("proto反序列化失败")
@@ -101,7 +98,7 @@ func ReceiveMsg(ch chan proto.Message) {
 					}
 				}
 			default:
-				fmt.Println("收到了bs_tcp.TCPTransferMsg以外的报文")
+				fmt.Println("收到了protodf.TCPTransferMsg以外的报文")
 			}
 		}
 	}

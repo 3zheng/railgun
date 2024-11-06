@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/3zheng/railgun/PoolAndAgent"
-	bs_proto "github.com/3zheng/railgun/protodefine"
-	bs_client "github.com/3zheng/railgun/protodefine/client"
+	protodf "github.com/3zheng/railgun/protodf"
+	protodf "github.com/3zheng/railgun/protodf/client"
 	proto "google.golang.org/protobuf/proto"
 )
 
@@ -27,7 +27,7 @@ func (this *LoginDBLogic) ProcessReq(req proto.Message, pDatabase *PoolAndAgent.
 	switch data := req.(type) {
 	case *PrivateInitMsg:
 		this.Private_OnInit(data)
-	case *bs_client.LoginReq:
+	case *protodf.LoginReq:
 		this.Client_OnDBLoginReq(data, pDatabase)
 	default:
 		return
@@ -43,15 +43,15 @@ func (this *LoginDBLogic) Private_OnInit(req *PrivateInitMsg) {
 	this.mLogicPool = req.pMainPool
 }
 
-func (this *LoginDBLogic) Client_OnDBLoginReq(req *bs_client.LoginReq, pDatabase *PoolAndAgent.CADODatabase) {
+func (this *LoginDBLogic) Client_OnDBLoginReq(req *protodf.LoginReq, pDatabase *PoolAndAgent.CADODatabase) {
 	sqlExpress := fmt.Sprintf("select * from user_base where login_account = '%s' and passwd ='%s'", req.LoginAccount, req.LoginPassword)
 	pDatabase.ReadFromDB(sqlExpress)
 
-	rsp := new(bs_client.LoginRsp)
-	bs_proto.SetBaseKindAndSubId(rsp)
-	bs_proto.CopyBaseExceptKindAndSubId(rsp.Base, req.Base)
+	rsp := new(protodf.LoginRsp)
+	protodf.SetBaseKindAndSubId(rsp)
+	protodf.CopyBaseExceptKindAndSubId(rsp.Base, req.Base)
 	rsp.UserSesionInfo.Client_IP = req.Base.RemoteAdd
-	bs_proto.OutputMyLog("login RemoteAdd=", req.Base.RemoteAdd)
+	protodf.OutputMyLog("login RemoteAdd=", req.Base.RemoteAdd)
 	if pDatabase.ReadInfo.RowNum != 0 {
 		var userId uint64
 		var nickName string
@@ -60,11 +60,11 @@ func (this *LoginDBLogic) Client_OnDBLoginReq(req *bs_client.LoginReq, pDatabase
 		rsp.UserId = userId
 		pDatabase.GetValueByRowIdAndColName(0, "nick_name", &nickName)
 		rsp.UserBaseInfo.NickName = nickName
-		rsp.LoginResult = bs_client.LoginRsp_SUCCESS //登录成功
+		rsp.LoginResult = protodf.LoginRsp_SUCCESS //登录成功
 		fmt.Println("登录成功,userId=", userId)
 	} else {
 		fmt.Println("返回行数为0，密码或者账号错误")
-		rsp.LoginResult = bs_client.LoginRsp_FALSEPW
+		rsp.LoginResult = protodf.LoginRsp_FALSEPW
 	}
 	//把登录回复传给主逻辑线程处理
 	this.PushToMainPool(rsp)

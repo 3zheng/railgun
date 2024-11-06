@@ -6,11 +6,8 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/3zheng/railgun/PoolAndAgent"
-	bs_proto "github.com/3zheng/railgun/protodefine"
-	bs_types "github.com/3zheng/railgun/protodefine/mytype"
-	bs_router "github.com/3zheng/railgun/protodefine/router"
-	bs_tcp "github.com/3zheng/railgun/protodefine/tcpnet"
+	"github.com/3zheng/railcommon"
+	protodf "github.com/3zheng/railcommon/protodf"
 
 	proto "google.golang.org/protobuf/proto"
 )
@@ -52,13 +49,13 @@ func (this *RouterLogic) ProcessReq(req proto.Message, pDatabase *PoolAndAgent.C
 	switch data := msg.(type) {
 	case *PrivateInitMsg:
 		this.Private_OnInit(data)
-	case *bs_tcp.TCPSessionCome:
+	case *protodf.TCPSessionCome:
 		this.Network_OnConnOK(data)
-	case *bs_tcp.TCPSessionClose:
+	case *protodf.TCPSessionClose:
 		this.Network_OnConnClose(data)
-	case *bs_router.RouterTransferData:
+	case *protodf.RouterTransferData:
 		this.Router_OnRouteDataReq(data)
-	case *bs_router.RegisterAppReq:
+	case *protodf.RegisterAppReq:
 		this.Router_OnRegReq(data)
 	default:
 		return
@@ -73,7 +70,7 @@ func (this *RouterLogic) Private_OnInit(req *PrivateInitMsg) {
 	this.mMyAppid = req.myAppId
 }
 
-func (this *RouterLogic) Router_OnRegReq(req *bs_router.RegisterAppReq) {
+func (this *RouterLogic) Router_OnRegReq(req *protodf.RegisterAppReq) {
 	appId := req.AppId
 	appType := req.AppType
 	connId := req.Base.ConnId
@@ -83,17 +80,17 @@ func (this *RouterLogic) Router_OnRegReq(req *bs_router.RegisterAppReq) {
 	}
 	_, ok2 := this.mMapAppId[appId]
 	if ok2 {
-		fmt.Println("相同类型相同app_id的app已经注册了，不允许重复注册。apptype=", appType, "typename=", bs_proto.GetAppTypeName(appType),
+		fmt.Println("相同类型相同app_id的app已经注册了，不允许重复注册。apptype=", appType, "typename=", protodf.GetAppTypeName(appType),
 			",appid=", appId, ",connid=", req.Base.ConnId)
-		log.Println("相同类型相同app_id的app已经注册了，不允许重复注册。apptype=", appType, "typename=", bs_proto.GetAppTypeName(appType),
+		log.Println("相同类型相同app_id的app已经注册了，不允许重复注册。apptype=", appType, "typename=", protodf.GetAppTypeName(appType),
 			",appid=", appId, ",connid=", req.Base.ConnId)
 		this.CloseSession(req.Base.ConnId)
 		return
 	}
 	//发送回复
-	rsp := new(bs_router.RegisterAppRsp)
-	bs_proto.SetBaseKindAndSubId(rsp)
-	bs_proto.CopyBaseExceptKindAndSubId(rsp.Base, req.Base)
+	rsp := new(protodf.RegisterAppRsp)
+	protodf.SetBaseKindAndSubId(rsp)
+	protodf.CopyBaseExceptKindAndSubId(rsp.Base, req.Base)
 	rsp.RegResult = 1
 	this.SendToOtherApp(rsp, rsp.Base)
 
@@ -134,12 +131,12 @@ func (this *RouterLogic) Router_OnRegReq(req *bs_router.RegisterAppReq) {
 	}
 
 	fmt.Println("一个App注册来了,type=", appType,
-		",typename=", bs_proto.GetAppTypeName(appType),
+		",typename=", protodf.GetAppTypeName(appType),
 		",id=", appId)
 
 }
 
-func (this *RouterLogic) Router_OnRouteDataReq(req *bs_router.RouterTransferData) {
+func (this *RouterLogic) Router_OnRouteDataReq(req *protodf.RouterTransferData) {
 	//----------------------------------------------------------------------
 	// 转发报文
 	// 目前看起来，指定app与指定appType中的任何一个使用的较多
@@ -166,10 +163,10 @@ func (this *RouterLogic) Router_OnRouteDataReq(req *bs_router.RouterTransferData
 
 	var sendResult bool = false
 	switch destAppId {
-	case uint32(bs_types.EnumAppId_Send2AnyOne):
+	case uint32(protodf.EnumAppId_Send2AnyOne):
 		//发给某种apptype下的任意一个appid
 		sendResult = this.DeliverToAnyOneByType(req, destAppType)
-	case uint32(bs_types.EnumAppId_Send2All):
+	case uint32(protodf.EnumAppId_Send2All):
 		//发给某个apptype下的所有appid
 		sendResult = this.DeliverToAllByType(req, destAppType)
 	default:
@@ -178,10 +175,10 @@ func (this *RouterLogic) Router_OnRouteDataReq(req *bs_router.RouterTransferData
 	if !sendResult {
 		fmt.Println("目标APP无法找到，可能尚未注册",
 			",dest apptype=", req.DestApptype,
-			",dest appname=", bs_proto.GetAppTypeName(req.DestApptype),
+			",dest appname=", protodf.GetAppTypeName(req.DestApptype),
 			",dest appid=", req.DestAppid,
 			",src apptype=", req.SrcApptype,
-			",src appname=", bs_proto.GetAppTypeName(req.SrcApptype),
+			",src appname=", protodf.GetAppTypeName(req.SrcApptype),
 			",src appid=", req.SrcAppid,
 			",src connid=", req.Base.ConnId,
 			",cmd_kindid=", req.DataCmdKind,
@@ -191,10 +188,10 @@ func (this *RouterLogic) Router_OnRouteDataReq(req *bs_router.RouterTransferData
 	} else {
 		fmt.Println("已向目标APP发送报文",
 			",dest apptype=", req.DestApptype,
-			",dest appname=", bs_proto.GetAppTypeName(req.DestApptype),
+			",dest appname=", protodf.GetAppTypeName(req.DestApptype),
 			",dest appid=", req.DestAppid,
 			",src apptype=", req.SrcApptype,
-			",src appname=", bs_proto.GetAppTypeName(req.SrcApptype),
+			",src appname=", protodf.GetAppTypeName(req.SrcApptype),
 			",src appid=", req.SrcAppid,
 			",src connid=", req.Base.ConnId,
 			",cmd_kindid=", req.DataCmdKind,
@@ -204,7 +201,7 @@ func (this *RouterLogic) Router_OnRouteDataReq(req *bs_router.RouterTransferData
 	}
 }
 
-func (this *RouterLogic) Network_OnConnOK(req *bs_tcp.TCPSessionCome) {
+func (this *RouterLogic) Network_OnConnOK(req *protodf.TCPSessionCome) {
 	if _, ok := this.mMapConnection[req.Base.ConnId]; ok {
 		//FIXME 一般这不可能发生
 		fmt.Println("发生了不可能事件，有重复的connId发生，connId = ", req.Base.ConnId)
@@ -214,7 +211,7 @@ func (this *RouterLogic) Network_OnConnOK(req *bs_tcp.TCPSessionCome) {
 	}
 }
 
-func (this *RouterLogic) Network_OnConnClose(req *bs_tcp.TCPSessionClose) {
+func (this *RouterLogic) Network_OnConnClose(req *protodf.TCPSessionClose) {
 	connId := req.Base.ConnId
 	fmt.Println("conn_id=", req.Base.ConnId, "断开连接")
 	appId, ok := this.mMapConnection[connId]
@@ -241,31 +238,31 @@ func (this *RouterLogic) Network_OnConnClose(req *bs_tcp.TCPSessionClose) {
 }
 
 // 向客户端发送报文
-func (this *RouterLogic) SendToOtherApp(req proto.Message, pBase *bs_types.BaseInfo) {
+func (this *RouterLogic) SendToOtherApp(req proto.Message, pBase *protodf.BaseInfo) {
 	msg := Router_CreateTCPTransferMsgByCommonMsg(req, pBase)
 	this.mPool.SendMsgToClientByNetAgent(msg)
 }
 
 // 主动断开一个session连接
 func (this *RouterLogic) CloseSession(connId uint64) {
-	kick := new(bs_tcp.TCPSessionKick)
-	bs_proto.SetBaseKindAndSubId(kick)
+	kick := new(protodf.TCPSessionKick)
+	protodf.SetBaseKindAndSubId(kick)
 	kick.Base.ConnId = connId
 	//通知tcpnet层断开这个session
 	this.mPool.SendMsgToClientByNetAgent(kick)
 }
 
 // 向某种apptype下的任意一个appid发送报文
-func (this *RouterLogic) DeliverToAnyOneByType(req *bs_router.RouterTransferData, destAppType uint32) bool {
-	bs_proto.OutputMyLog("发送往任意的", bs_proto.GetAppTypeName(destAppType))
-	if req.DataDirection == bs_router.RouterTransferData_App2Client {
+func (this *RouterLogic) DeliverToAnyOneByType(req *protodf.RouterTransferData, destAppType uint32) bool {
+	protodf.OutputMyLog("发送往任意的", protodf.GetAppTypeName(destAppType))
+	if req.DataDirection == protodf.RouterTransferData_App2Client {
 		//如果是服务端发往客户端的报文。不接受发往任意gate，必须指定gate appid，因为发往任意gate没有意义，根本找不到对应用户
-		bs_proto.OutputMyLog("服务端发往客户端的报文必须指定gate appid")
+		protodf.OutputMyLog("服务端发往客户端的报文必须指定gate appid")
 		return false
 	}
 	typeElem, ok2 := this.mMapAppType[destAppType]
 	if !ok2 {
-		bs_proto.OutputMyLog("找不到相应的AppType=", bs_proto.GetAppTypeName(destAppType))
+		protodf.OutputMyLog("找不到相应的AppType=", protodf.GetAppTypeName(destAppType))
 		return false
 	}
 	//先找到对应的app type然后随机选择属于这个app type的一个app id
@@ -274,7 +271,7 @@ func (this *RouterLogic) DeliverToAnyOneByType(req *bs_router.RouterTransferData
 		randAppId := typeElem[randIndex]
 		idElem, ok3 := this.mMapAppId[randAppId]
 		if !ok3 {
-			bs_proto.OutputMyLog("找不到相应的AppId=", randAppId)
+			protodf.OutputMyLog("找不到相应的AppId=", randAppId)
 			return false
 		}
 		//修改connId然后就可以转发了
@@ -287,15 +284,15 @@ func (this *RouterLogic) DeliverToAnyOneByType(req *bs_router.RouterTransferData
 }
 
 // 向某种apptype下的所有appid发送报文
-func (this *RouterLogic) DeliverToAllByType(req *bs_router.RouterTransferData, destAppType uint32) bool {
-	if req.DataDirection == bs_router.RouterTransferData_App2Client && destAppType == uint32(bs_types.EnumAppType_Gate) {
+func (this *RouterLogic) DeliverToAllByType(req *protodf.RouterTransferData, destAppType uint32) bool {
+	if req.DataDirection == protodf.RouterTransferData_App2Client && destAppType == uint32(protodf.EnumAppType_Gate) {
 		//如果是服务端发往客户端的报文。接受发往所有gate，因为有可能是广播类型消息，但是要慎用，所以打印出来，以免滥用
 		fmt.Println("此报文向将所有gate广播",
 			",dest apptype=", req.DestApptype,
-			",dest appname=", bs_proto.GetAppTypeName(req.DestApptype),
+			",dest appname=", protodf.GetAppTypeName(req.DestApptype),
 			",dest appid=", req.DestAppid,
 			",src apptype=", req.SrcApptype,
-			",src appname=", bs_proto.GetAppTypeName(req.SrcApptype),
+			",src appname=", protodf.GetAppTypeName(req.SrcApptype),
 			",src appid=", req.SrcAppid,
 			",src connid=", req.Base.ConnId,
 			",cmd_kindid=", req.DataCmdKind,
@@ -322,8 +319,8 @@ func (this *RouterLogic) DeliverToAllByType(req *bs_router.RouterTransferData, d
 }
 
 // 向指定appId发送报文
-func (this *RouterLogic) DeliverToAllByPointID(req *bs_router.RouterTransferData, destAppType uint32, destAppId uint32) bool {
-	if req.DataDirection == bs_router.RouterTransferData_App2Client && destAppType != uint32(bs_types.EnumAppType_Gate) {
+func (this *RouterLogic) DeliverToAllByPointID(req *protodf.RouterTransferData, destAppType uint32, destAppId uint32) bool {
+	if req.DataDirection == protodf.RouterTransferData_App2Client && destAppType != uint32(protodf.EnumAppType_Gate) {
 		//如果是服务端发往客户端的报文。却不是发往gate，那就是填错了
 		return false
 	}

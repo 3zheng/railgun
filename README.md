@@ -29,7 +29,7 @@ GateApp,RouterApp,LoginApp是package main的exe工程，所以可以单独拿出
 每当根据业务需求新写一个业务App时，需要手写的源文件有
 package main的main.go、PrivateMsg.go（这个如果没有需要新增私有报文就直接复制过来就行了）、XXXMsgFilter.go、XXXMainLogic.go、XXXDBLogic.go（如果需要操作数据库的话）
 
-Package bs_proto的SetBaseInfo.go中的SetBaseKindAndSubId函数，要根据proto数据类型对其new Base并对Base.KindId和SubId赋值
+Package protodf的SetBaseInfo.go中的SetBaseKindAndSubId函数，要根据proto数据类型对其new Base并对Base.KindId和SubId赋值
 
 ## 7.个人的吐槽
 由于不知道怎么排版README，所以项目就在这里简述一下，详细文档说明移步到我的blog。个人水平有限，希望抛砖引玉吸引大神or练手的同学来将整个框架更加完善，共同为独立游戏开发者这个群体尽一点绵薄之力。希望感兴趣的同学or大神能和我一起完善开发，如果在征求您同意的前提下，我会将您的名字放入下面的贡献者名单中。我目前在369793160这个群里面，里面很多golang的高手，如果要共同学习进步可以加这个群。不过我不是群主也不是管理员，是否能加的进来看运气了，O(∩_∩)O哈哈~。如果真的用的人挺多的，那我届时会再建一个群，当前有问题可以发邮件到914509007@qq.com给我或者加我QQ，我有空都会看的

@@ -5,13 +5,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/3zheng/railgun/PoolAndAgent"
-	bs_proto "github.com/3zheng/railgun/protodefine"
-	bs_client "github.com/3zheng/railgun/protodefine/client"
-	bs_gate "github.com/3zheng/railgun/protodefine/gate"
-	bs_types "github.com/3zheng/railgun/protodefine/mytype"
-	bs_router "github.com/3zheng/railgun/protodefine/router"
-	bs_tcp "github.com/3zheng/railgun/protodefine/tcpnet"
+	"github.com/3zheng/railcommon"
+	protodf "github.com/3zheng/railproto"
 	proto "google.golang.org/protobuf/proto"
 )
 
@@ -33,23 +28,23 @@ type GateUserInfo struct {
 
 // *GateLogic继承于LogicProcess接口
 type GateLogic struct {
-	mPool          *PoolAndAgent.SingleMsgPool //自身绑定的SingleMsgPool
-	mListenAgent   *PoolAndAgent.NetAgent
-	mRouterAgents  *PoolAndAgent.RouterAgent //暂时一个router agent，以后可能会有多个
+	mPool          *railcommon.SingleMsgPool //自身绑定的SingleMsgPool
+	mListenAgent   *railcommon.NetAgent
+	mRouterAgents  *railcommon.RouterAgent //暂时一个router agent，以后可能会有多个
 	mMyAppid       uint32
 	mMapConnection map[uint64]GateConnection //以connId为key的map
 	mMapUser       map[uint64]GateUserInfo   //以userId为key的map
 }
 
 // 实现PoolAndAgent.ILogicProcess的三个接口函数
-func (this *GateLogic) Init(myPool *PoolAndAgent.SingleMsgPool) bool {
+func (this *GateLogic) Init(myPool *railcommon.SingleMsgPool) bool {
 	this.mPool = myPool
 	this.mMapConnection = make(map[uint64]GateConnection)
 	this.mMapUser = make(map[uint64]GateUserInfo)
 	return true
 }
 
-func (this *GateLogic) ProcessReq(req proto.Message, pDatabase *PoolAndAgent.CADODatabase) {
+func (this *GateLogic) ProcessReq(req proto.Message, pDatabase *railcommon.CADODatabase) {
 	if req == nil {
 		return
 	}
@@ -57,17 +52,17 @@ func (this *GateLogic) ProcessReq(req proto.Message, pDatabase *PoolAndAgent.CAD
 	switch data := msg.(type) {
 	case *PrivateInitMsg:
 		this.Private_OnInit(data)
-	case *bs_tcp.TCPSessionCome:
+	case *protodf.TCPSessionCome:
 		this.Network_OnConnOK(data)
-	case *bs_tcp.TCPSessionClose:
+	case *protodf.TCPSessionClose:
 		this.Network_OnConnClose(data)
-	case *bs_gate.GateTransferData:
+	case *protodf.GateTransferData:
 		this.Gate_GateTransferData(data)
-	case *bs_gate.PulseReq:
+	case *protodf.PulseReq:
 		this.Gate_PulseReq(data)
-	case *bs_router.RouterTransferData:
+	case *protodf.RouterTransferData:
 		this.Router_OnRouterTransferData(data)
-	case *bs_client.LoginRsp:
+	case *protodf.LoginRsp:
 		this.Client_OnLoginRsp(data)
 	default:
 		if data != nil {
@@ -85,7 +80,7 @@ func (this *GateLogic) Private_OnInit(req *PrivateInitMsg) {
 }
 
 // 新建了一个客户端session
-func (this *GateLogic) Network_OnConnOK(req *bs_tcp.TCPSessionCome) {
+func (this *GateLogic) Network_OnConnOK(req *protodf.TCPSessionCome) {
 	fmt.Println("收到了TCPSessionCome报文")
 	if req.Base.ConnId > 0xefffffff {
 		fmt.Println("报告大王，连接快被分配完了，快点采取行动")
@@ -112,7 +107,7 @@ func (this *GateLogic) Network_OnConnOK(req *bs_tcp.TCPSessionCome) {
 }
 
 // 断开了一个客户端session
-func (this *GateLogic) Network_OnConnClose(req *bs_tcp.TCPSessionClose) {
+func (this *GateLogic) Network_OnConnClose(req *protodf.TCPSessionClose) {
 	connId := req.Base.ConnId
 	fmt.Println("conn_id=", req.Base.ConnId, "断开连接")
 	log.Println("conn_id=", req.Base.ConnId, "断开连接")
@@ -131,17 +126,17 @@ func (this *GateLogic) Network_OnConnClose(req *bs_tcp.TCPSessionClose) {
 }
 
 // 收到了客户端的心跳测试请求
-func (this *GateLogic) Gate_PulseReq(req *bs_gate.PulseReq) {
+func (this *GateLogic) Gate_PulseReq(req *protodf.PulseReq) {
 	//发送回复
-	rsp := new(bs_gate.PulseRsp)
-	bs_proto.SetBaseKindAndSubId(rsp)
+	rsp := new(protodf.PulseRsp)
+	protodf.SetBaseKindAndSubId(rsp)
 	rsp.Base.ConnId = req.Base.ConnId
 	rsp.SpeedData = uint32(time.Now().Unix())
 	this.SendToClient(rsp, rsp.Base)
 }
 
 // 收到了客户端传来的消息
-func (this *GateLogic) Gate_GateTransferData(req *bs_gate.GateTransferData) {
+func (this *GateLogic) Gate_GateTransferData(req *protodf.GateTransferData) {
 	connElem, ok := this.mMapConnection[req.Base.ConnId]
 	if !ok {
 		//FIXME logger
@@ -153,9 +148,9 @@ func (this *GateLogic) Gate_GateTransferData(req *bs_gate.GateTransferData) {
 	connElem.msgFromClientNum++
 	connElem.lastResponseTime = time.Now().Unix()
 
-	routerMsg := new(bs_router.RouterTransferData)
-	bs_proto.SetBaseKindAndSubId(routerMsg)
-	bs_proto.CopyBaseExceptKindAndSubId(routerMsg.Base, req.Base)
+	routerMsg := new(protodf.RouterTransferData)
+	protodf.SetBaseKindAndSubId(routerMsg)
+	protodf.CopyBaseExceptKindAndSubId(routerMsg.Base, req.Base)
 
 	routerMsg.DestAppid = req.AttAppid
 	routerMsg.DestApptype = req.AttApptype
@@ -165,8 +160,8 @@ func (this *GateLogic) Gate_GateTransferData(req *bs_gate.GateTransferData) {
 	copy(routerMsg.Data, req.Data) //这里使用copy重新分配一块内存块，然后req就可以被GC了，可能routerMsg.Data = req.Data更好，可以跑跑试试
 	//FIXME 这里需要取得自己的app_type与id
 	routerMsg.SrcAppid = this.mMyAppid
-	routerMsg.SrcApptype = uint32(bs_types.EnumAppType_Gate)
-	routerMsg.DataDirection = bs_router.RouterTransferData_Client2App
+	routerMsg.SrcApptype = uint32(protodf.EnumAppType_Gate)
+	routerMsg.DataDirection = protodf.RouterTransferData_Client2App
 	routerMsg.AttGateid = this.mMyAppid
 	routerMsg.AttUserid = connElem.userId
 	routerMsg.AttGateconnid = connElem.connId
@@ -178,13 +173,13 @@ func (this *GateLogic) Gate_GateTransferData(req *bs_gate.GateTransferData) {
 			",sub_id=", req.DataCmdSubid,
 			",my_user_id=", connElem.userId,
 			",dest_appid=", req.AttAppid,
-			",dest_apptype=", bs_proto.GetAppTypeName(req.AttApptype))
+			",dest_apptype=", protodf.GetAppTypeName(req.AttApptype))
 		log.Println("目标地址为0,来自client,connid=", connElem.connId,
 			",kind_id=", req.DataCmdKind,
 			",sub_id=", req.DataCmdSubid,
 			",my_user_id=", connElem.userId,
 			",dest_appid=", req.AttAppid,
-			",dest_apptype=", bs_proto.GetAppTypeName(req.AttApptype))
+			",dest_apptype=", protodf.GetAppTypeName(req.AttApptype))
 		return //且不往router发送了
 	}
 	//向router发送消息
@@ -192,7 +187,7 @@ func (this *GateLogic) Gate_GateTransferData(req *bs_gate.GateTransferData) {
 	this.mPool.SendMsgToServerAppByRouter(routerMsg)
 }
 
-func (this *GateLogic) Router_OnRouterTransferData(req *bs_router.RouterTransferData) {
+func (this *GateLogic) Router_OnRouterTransferData(req *protodf.RouterTransferData) {
 
 	//转发报文,应当只会是那类需要转到客户端的
 	//不是转发到客户端的报文，在解析成普通报文后重新推送进自己的mPool中，是否要处理，在processReq入口处决定
@@ -200,7 +195,7 @@ func (this *GateLogic) Router_OnRouterTransferData(req *bs_router.RouterTransfer
 
 	//这里发送对象以userId为准，如果userId为0才去使用gateconnid来查找相应发送对象
 	gateConnId := req.AttGateconnid
-	if req.DataDirection == bs_router.RouterTransferData_App2Client {
+	if req.DataDirection == protodf.RouterTransferData_App2Client {
 		userId := req.AttUserid
 		if userId == 0 && gateConnId == 0 {
 			fmt.Println("报告大王，有个搞笑的家伙发来了user_id和conn_id均为0的报文。叫我女王大人。好的大王，没问题大王！")
@@ -274,7 +269,7 @@ func (this *GateLogic) Router_OnRouterTransferData(req *bs_router.RouterTransfer
 			this.SendToClient(req, req.Base)
 		}
 
-	} else if req.DataDirection == bs_router.RouterTransferData_App2App {
+	} else if req.DataDirection == protodf.RouterTransferData_App2App {
 		//这个是发给gate自己的，而不是发给客户端的，需要gate app来处理
 		fmt.Println("收到了需要gate自己来处理的报文,SrcApptype=", req.SrcApptype, "SrcAppid=", req.SrcAppid,
 			"DataCmdKind=", req.DataCmdKind, "DataCmdSubid=", req.DataCmdSubid)
@@ -297,7 +292,7 @@ func (this *GateLogic) AppFrame_OnClientAuth(req proto.Message) {
 }
 
 // 登录回复报文
-func (this *GateLogic) Client_OnLoginRsp(req *bs_client.LoginRsp) {
+func (this *GateLogic) Client_OnLoginRsp(req *protodf.LoginRsp) {
 	fmt.Println("收到了LoginRsp, string=", req.String(), "gate connId=", req.Base.GateConnId)
 	//收到了登录回复报文表示验证成功了
 	connId := req.Base.GateConnId
@@ -305,19 +300,19 @@ func (this *GateLogic) Client_OnLoginRsp(req *bs_client.LoginRsp) {
 	userId := req.UserId
 	connElem, ok := this.mMapConnection[connId]
 	if !ok {
-		bs_proto.OutputMyLog("不存在的connId=", connId)
+		protodf.OutputMyLog("不存在的connId=", connId)
 		return
 	}
 	connElem.isAuthenticated = true
 	connElem.userId = userId
 	this.mMapConnection[connId] = connElem
 	//登录成功的情况下才记录userId
-	if userId != 0 && req.LoginResult == bs_client.LoginRsp_SUCCESS {
+	if userId != 0 && req.LoginResult == protodf.LoginRsp_SUCCESS {
 		//查mMapUser
 		userElem, ok := this.mMapUser[userId]
 		if ok {
 			//如果存在，要做顶号处理，把之前的连接断开，不能一个userId维持两个连接
-			kick := new(bs_tcp.TCPSessionKick) //userElem.connId就是要断开的connId
+			kick := new(protodf.TCPSessionKick) //userElem.connId就是要断开的connId
 			kick.Base.ConnId = userElem.connId
 			this.SendToClient(kick, kick.Base)
 		}
@@ -332,16 +327,16 @@ func (this *GateLogic) Client_OnLoginRsp(req *bs_client.LoginRsp) {
 }
 
 // 向客户端发送报文
-func (this *GateLogic) SendToClient(req proto.Message, pBase *bs_types.BaseInfo) {
-	//先把其他报文转成bs_gate.TransferData然后再转成bs_tcp.TCPTransferMsg
-	var gateTrans *bs_gate.GateTransferData = nil
+func (this *GateLogic) SendToClient(req proto.Message, pBase *protodf.BaseInfo) {
+	//先把其他报文转成protodf.TransferData然后再转成protodf.TCPTransferMsg
+	var gateTrans *protodf.GateTransferData = nil
 	gateTrans = Gate_CreateGateTransferMsgByCommonMsg(req)
 	if gateTrans != nil {
-		//将bs_gate.TransferData报文转为bs_tcp.TCPTransferMsg
+		//将protodf.TransferData报文转为protodf.TCPTransferMsg
 		msg := Gate_CreateTCPTransferMsgByCommonMsg(gateTrans, gateTrans.Base)
 		this.mPool.SendMsgToClientByNetAgent(msg)
 	} else {
-		//非bs_gate.TransferData报文就直接把req转为bs_tcp.TCPTransferMsg
+		//非protodf.TransferData报文就直接把req转为protodf.TCPTransferMsg
 		msg := Gate_CreateTCPTransferMsgByCommonMsg(req, pBase)
 		this.mPool.SendMsgToClientByNetAgent(msg)
 	}
@@ -350,8 +345,8 @@ func (this *GateLogic) SendToClient(req proto.Message, pBase *bs_types.BaseInfo)
 
 // 主动断开一个session连接
 func (this *GateLogic) CloseSession(connId uint64) {
-	kick := new(bs_tcp.TCPSessionKick)
-	bs_proto.SetBaseKindAndSubId(kick)
+	kick := new(protodf.TCPSessionKick)
+	protodf.SetBaseKindAndSubId(kick)
 	kick.Base.ConnId = connId
 	//通知tcpnet层断开这个session
 	this.mPool.SendMsgToClientByNetAgent(kick)

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/3zheng/railgun/PoolAndAgent"
+	"github.com/3zheng/railcommon"
 
 	proto "google.golang.org/protobuf/proto"
 )
@@ -17,8 +17,8 @@ import (
 
 // 初始化报文
 type PrivateInitMsg struct {
-	pNetAgent    *PoolAndAgent.NetAgent
-	pRouterAgent *PoolAndAgent.RouterAgent
+	pNetAgent    *railcommon.NetAgent
+	pRouterAgent *railcommon.RouterAgent
 	myAppId      uint32
 }
 
