@@ -1,4 +1,4 @@
-module RouterApp
+module github.com/3zheng/railgun
 
 go 1.23.0
 
@@ -7,6 +7,8 @@ require (
 	github.com/3zheng/railproto v0.0.3
 	google.golang.org/protobuf v1.35.1
 )
+
+//replace github.com/3zheng/railgun/common v0.0.2 => ./common
 
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect

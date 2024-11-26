@@ -4,8 +4,11 @@ use MIT license：就是你想干啥就干啥的开源协议
 一个简单的CS模式的游戏服务器框架，引入protobuf第三方库作为报文协议，mysql作为数据库，Go-mysql-driver作为驱动库。这三个东西是需要自己另外安装
 
 ## 部署和编译
-使用命令 go get -u github.com/3zheng/railgun 来download
-如果不想使用go get -u github.com/3zheng/railgun命令可以去 http://git.oschina.net/poorbreast/railgun 这里开源中国上下载非import github.com/3zheng/railgun的工程源码
+go build ./GateApp
+go build ./RouterApp
+go build ./LoginApp
+
+go build ./ClientForTest
 
 编译：
 GateApp,RouterApp,LoginApp是package main的exe工程，所以可以单独拿出来放到$GOPATH目录下，不会影响编译
